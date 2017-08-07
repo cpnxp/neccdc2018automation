@@ -1,0 +1,224 @@
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Deny",
+      "Action": [
+        "ec2:AcceptVpcPeeringConnection",
+        "ec2:AssociateDhcpOptions",
+        "ec2:AssociateRouteTable",
+        "ec2:AttachClassicLinkVpc",
+        "ec2:AttachInternetGateway",
+        "ec2:AttachVpnGateway",
+        "ec2:CreateCustomerGateway",
+        "ec2:CreateDhcpOptions",
+        "ec2:CreateInternetGateway",
+        "ec2:CreateNatGateway",
+        "ec2:CreateNetworkAcl*",
+        "ec2:CreateRoute*",
+        "ec2:CreateSubnet",
+        "ec2:CreateVpc*",
+        "ec2:CreateVpn*",
+        "ec2:DeleteCustomerGateway",
+        "ec2:DeleteDhcpOptions",
+        "ec2:DeleteFlowLogs",
+        "ec2:DeleteInternetGateway",
+        "ec2:DeleteNatGateway",
+        "ec2:DeleteNetworkAcl*",
+        "ec2:DeleteRoute",
+        "ec2:DeleteRouteTable",
+        "ec2:DeleteSubnet",
+        "ec2:DeleteVpc*",
+        "ec2:DeleteVpn*",
+        "ec2:DetachClassicLinkVpc",
+        "ec2:DetachInternetGateway",
+        "ec2:DetachVpnGateway",
+        "ec2:DisableVgwRoutePropagation",
+        "ec2:DisableVpcClassicLink",
+        "ec2:DisassociateRouteTable",
+        "ec2:EnableVgwRoutePropagation",
+        "ec2:EnableVpcClassicLink",
+        "ec2:ModifySubnetAttribute",
+        "ec2:ModifyVpc*",
+        "ec2:RejectVpcPeeringConnection",
+        "ec2:ReplaceNetworkAclAssociation",
+        "ec2:ReplaceNetworkAclEntry",
+        "ec2:ReplaceRoute",
+        "ec2:ReplaceRouteTableAssociation",
+        "ec2:RestoreAddressToClassic",
+        "iam:CreateLoginProfile"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "cloudformation:CreateStack",
+        "cloudformation:DeleteStack",
+        "cloudformation:UpdateStack"
+      ],
+      "Resource": [
+        "arn:aws:cloudformation:*:*:stack/blackteam-services*"
+      ]
+    },
+    {
+      "Effect": "Deny",
+      "NotAction": [
+        "iam:Get*",
+        "iam:List*"
+      ],
+      "Resource": [
+        "arn:aws:iam::*:user/cloud-services/*",
+        "arn:aws:iam::*:role/cloud-services/*",
+        "arn:aws:iam::*:role/cloud-services-*",
+        "arn:aws:iam::*:role/MasterAccountAdminRole*",
+        "arn:aws:iam::*:role/aws-security-services*",
+        "arn:aws:iam::*:role/lm-adfs-saml-billing",
+        "arn:aws:iam::*:role/lm-adfs-saml-read_only",
+        "arn:aws:iam::*:role/lm-adfs-saml-developer",
+        "arn:aws:iam::*:role/lm-cross_account*"
+      ]
+    },
+    {
+      "Effect": "Deny",
+      "NotAction": [
+        "iam:Attach*Policy",
+        "iam:Detach*Policy",
+        "iam:List*",
+        "iam:Get*"
+      ],
+      "Resource": "arn:aws:iam::*:policy/cloud-services/*"
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "iam:DeleteSAMLProviders",
+        "iam:UpdateSAMLProviders",
+        "iam:CreateSAMLProvider"
+      ],
+      "Resource": "arn:aws:iam:::saml-provider/lm-adfs-*"
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "dynamodb:PutItem",
+        "dynamodb:Update*",
+        "dynamodb:Delete*",
+        "dynamodb:CreateTable",
+        "dynamodb:BatchWriteItem"
+      ],
+      "Resource": "arn:aws:dynamodb:*:*:table/credential-store"
+    },
+    {
+      "Effect": "Deny",
+      "Action": "s3:Delete*",
+      "Resource": "arn:aws:s3:::neccdc2018-*"
+    },
+    {
+      "Effect": "Deny",
+      "NotAction": [
+        "s3:List*",
+        "s3:Get*",
+        "s3:PutBucketNotification",
+        "s3:PutObject*",
+        "s3:Abort*"
+      ],
+      "Resource": [
+        "arn:aws:s3:::blackteam-*-access-logs-*/*",
+        "arn:aws:s3:::blackteam-*-access-logs-*"
+      ]
+    },
+    {
+      "Effect": "Deny",
+      "NotAction": [
+        "s3:List*",
+        "s3:Get*"
+      ],
+      "Resource": [
+        "arn:aws:s3:::blackteam-services-*/*",
+        "arn:aws:s3:::blackteam-services-*"
+      ]
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "sqs:*"
+      ],
+      "Resource": [
+        "arn:aws:sqs:*:*:blackteam-services-*"
+      ]
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "sns:*"
+      ],
+      "Resource": [
+        "arn:aws:sns:*:*:blackteam-services-*"
+      ]
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+         "ec2:*"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringLike": {
+          "ec2:ResourceTag/Name": [
+            "blackteam-services*"
+          ]
+        }
+      }
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "lambda:AddPermission",
+        "lambda:Create*",
+        "lambda:Delete*",
+        "lambda:Invoke*",
+        "lambda:PublishVersion",
+        "lambda:RemovePermission",
+        "lambda:Update*"
+      ],
+      "Resource": [
+        "arn:aws:lambda:*:*:function:blackteam-services-*"
+      ]
+    },
+    {
+      "Effect": "Deny",
+      "Action": "events:*",
+      "Resource": [
+        "arn:aws:events:*:*:rule/blackteam-services-*"
+      ]
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "cloudtrail:DeleteTrail",
+        "cloudtrail:RemoveTags",
+        "cloudtrail:StopLogging",
+        "cloudtrail:UpdateTrail",
+        "config:Delete*",
+        "config:Put*",
+        "config:StartConfigurationRecorder",
+        "config:StopConfigurationRecorder",
+        "directconnect:Delete*",
+        "directconnect:Allocate*",
+        "directconnect:Create*",
+        "directconnect:Confirm*",
+        "aws-portal:Modify*",
+        "route53domains:Register*",
+        "route53domains:Transfer*",
+        "workdocs:*",
+        "workmail:*"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+
+ 
+ 
