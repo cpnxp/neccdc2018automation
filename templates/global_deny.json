@@ -59,13 +59,7 @@
         "cloudformation:UpdateStack"
       ],
       "Resource": [
-        "arn:aws:cloudformation:*:*:stack/aws-iam-watchdog-services*",
-        "arn:aws:cloudformation:*:*:stack/aws-palo-alto-services*",
-        "arn:aws:cloudformation:*:*:stack/aws-nessus*",
-        "arn:aws:cloudformation:*:*:stack/aws-security-services*",
-        "arn:aws:cloudformation:*:*:stack/aws-test-*services*",
-        "arn:aws:cloudformation:*:*:stack/aws*flow-logs-services*",
-        "arn:aws:cloudformation:*:*:stack/*ad*services*"
+        "arn:aws:cloudformation:*:*:stack/blackteam-services*"
       ]
     },
     {
@@ -119,7 +113,7 @@
     {
       "Effect": "Deny",
       "Action": "s3:Delete*",
-      "Resource": "arn:aws:s3:::lmig-deploy-*"
+      "Resource": "arn:aws:s3:::neccdc2018-*"
     },
     {
       "Effect": "Deny",
@@ -131,8 +125,8 @@
         "s3:Abort*"
       ],
       "Resource": [
-        "arn:aws:s3:::lmig-*-access-logs-*/*",
-        "arn:aws:s3:::lmig-*-access-logs-*"
+        "arn:aws:s3:::blackteam-*-access-logs-*/*",
+        "arn:aws:s3:::blackteam-*-access-logs-*"
       ]
     },
     {
@@ -142,8 +136,8 @@
         "s3:Get*"
       ],
       "Resource": [
-        "arn:aws:s3:::lmig-account-services-*/*",
-        "arn:aws:s3:::lmig-account-services-*"
+        "arn:aws:s3:::blackteam-services-*/*",
+        "arn:aws:s3:::blackteam-services-*"
       ]
     },
     {
@@ -152,7 +146,7 @@
         "sqs:*"
       ],
       "Resource": [
-        "arn:aws:sqs:*:*:aws-security-services-*"
+        "arn:aws:sqs:*:*:blackteam-services-*"
       ]
     },
     {
@@ -161,35 +155,20 @@
         "sns:*"
       ],
       "Resource": [
-        "arn:aws:sns:*:*:aws-security-services-*"
+        "arn:aws:sns:*:*:blackteam-services-*"
       ]
     },
     {
       "Effect": "Deny",
-      "Action": "ec2:*",
-      "Resource": "*",
-      "Condition": {
-        "StringLike": {
-          "ec2:ResourceTag/Name": [
-            "aws-palo-alto-services*",
-            "aws-quarantine-sg*",
-            "aws-nessus-*",
-            "aws-ad-services-*"
-          ]
-        }
-      }
-    },
-    {
-      "Effect": "Deny",
       "Action": [
-        "ec2:AuthorizeSecurityGroup*",
-        "ec2:RevokeSecurityGroup*",
-        "ec2:DeleteSecurityGroup"
+         "ec2:*"
       ],
       "Resource": "*",
       "Condition": {
         "StringLike": {
-          "ec2:ResourceTag/Name": "aws-shared-*"
+          "ec2:ResourceTag/Name": [
+            "blackteam-services*"
+          ]
         }
       }
     },
@@ -205,17 +184,14 @@
         "lambda:Update*"
       ],
       "Resource": [
-        "arn:aws:lambda:*:*:function:aws-security-services-*",
-        "arn:aws:lambda:*:*:function:aws-iam-watchdog-services-*",
-        "arn:aws:lambda:*:*:function:aws-palo-alto-services-*"
+        "arn:aws:lambda:*:*:function:blackteam-services-*"
       ]
     },
     {
       "Effect": "Deny",
       "Action": "events:*",
       "Resource": [
-        "arn:aws:events:*:*:rule/aws-security-services-*",
-        "arn:aws:events:*:*:rule/aws-iam-watchdog-services-*"
+        "arn:aws:events:*:*:rule/blackteam-services-*"
       ]
     },
     {
