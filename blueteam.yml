@@ -1,0 +1,27 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: False
+  vars:
+      timestamp: "{{ lookup('pipe', 'date +%Y%m%d%H%M%SZ') }}"
+  tasks:
+    - name: Sync CFT templates to S3
+      s3_sync:
+        bucket: neccdc2018
+        file_root: templates/
+    - name: launch competition stack
+      cloudformation:
+        stack_name: "NECCDC2018-BlueTeam{{ timestamp }}"
+        state: "present"
+        region: "us-east-1"
+        disable_rollback: false
+        template: "templates/main-webapp-linux.json"
+        template_parameters:
+          pKeyName: "neccdc2"
+          pRegionAZ1Name: "us-east-1a"
+          pRegionAZ2Name: "us-east-1b"
+          pDBPassword: "unuused"
+          pCreateCloudTrail: "no"
+        tags:
+           Stack: "NECCDC2018-BlueTeam{{ timestamp }}"
+

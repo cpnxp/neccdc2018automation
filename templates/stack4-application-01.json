@@ -425,6 +425,8 @@
       "Properties": {
         "DBName"            : { "Ref" : "pDBName" },
         "Engine"            : "aurora",
+	"MasterUsername"    : "unused",
+	"MasterUserPassword" : "unused",
         "MultiAZ"           : "true",
         "StorageEncrypted"  : "true",
         "DBInstanceClass"   : { "Ref" : "pDBClass" },
