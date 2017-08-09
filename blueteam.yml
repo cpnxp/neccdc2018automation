@@ -3,13 +3,13 @@
   connection: local
   gather_facts: False
   vars:
-      timestamp: "{{ lookup('pipe', 'date +%Y%m%d%H%M%SZ') }}"
+    timestamp: "{{ lookup('pipe', 'date +%Y%m%d-%H%M%S') }}"
   tasks:
     - name: Sync CFT templates to S3
       s3_sync:
         bucket: neccdc2018
         file_root: templates/
-    - name: launch competition stack
+    - name: launch competition infrastructure
       cloudformation:
         stack_name: "NECCDC2018-BlueTeam{{ timestamp }}"
         state: "present"
@@ -22,6 +22,7 @@
           pRegionAZ2Name: "us-east-1b"
           pDBPassword: "unuused"
           pCreateCloudTrail: "no"
+          stack4URL: ""
         tags:
-           Stack: "NECCDC2018-BlueTeam{{ timestamp }}"
+           Stack: "blueteam_infrastructure"
 

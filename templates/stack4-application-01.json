@@ -426,11 +426,10 @@
         "DBName"            : { "Ref" : "pDBName" },
         "Engine"            : "aurora",
 	"MasterUsername"    : "unused",
-	"MasterUserPassword" : "unused",
-        "MultiAZ"           : "true",
+	"MasterUserPassword" : "unusedpassword",
+        "MultiAZ"           : "false",
         "StorageEncrypted"  : "true",
         "DBInstanceClass"   : { "Ref" : "pDBClass" },
-        "AllocatedStorage"  : { "Ref" : "pDBAllocatedStorage" },
 	"DBSubnetGroupName" : { "Ref" : "rDBSubnetGroup" }
       }
     },
