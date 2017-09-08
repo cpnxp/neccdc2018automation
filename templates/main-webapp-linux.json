@@ -342,7 +342,7 @@
       "pDBClass" : {
          "Description" : "Instance class of RDS instance",
          "Type" : "String",
-	 "Default" : "db.m3.large"
+	 "Default" : "db.t2.medium"
       },
       "pDBAllocatedStorage" : {
          "Description" : "Allocated Storage (in GB) for RDS instance",
