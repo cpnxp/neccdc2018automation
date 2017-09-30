@@ -3,8 +3,8 @@
    "Description": "Provides the base security, logging, IAM, and access configuration for the AWS account",
     "Metadata" : {
         "Stack" : {"Value" : "1"},
-        "VersionDate" : { "Value" : "09292015" },
-        "Identifier" : { "Value" : "stack1-access-01" },
+        "VersionDate" : { "Value" : "09302017" },
+        "Identifier" : { "Value" : "stack1-access" },
         "Input" : { "Description" : "CloudTrail bucket name" },
         "Output" : { "Description" : "Outputs ID of all deployed resources" }
     },

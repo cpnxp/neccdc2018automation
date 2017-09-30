@@ -3,8 +3,8 @@
    "Description": "Provides S3 buckets, S3 Policies, Security Groups, and related resources",
     "Metadata" : {
         "Stack" : {"Value" : "3"},
-        "VersionDate" : { "Value" : "09292015" },
-        "Identifier" : { "Value" : "stack3-resources-01" },
+        "VersionDate" : { "Value" : "09302017" },
+        "Identifier" : { "Value" : "stack3-resources" },
         "Input" : { "Description" : "VPC, SubnetIDs, S3 bucket names, CIDR blocks" },
         "Output" : { "Description" : "Outputs ID of all deployed resources" }
     },
@@ -17,20 +17,20 @@
          "Description": "Production VPC",
          "Type": "String"
       },
-      "pDMZSubnetA": {
-         "Description": "DMZ Subnet A",
+      "pProductionPublicSubnetA": {
+         "Description": "ProductionPublic Subnet A",
          "Type": "String"
       },
-      "pDMZSubnetB": {
-         "Description": "DMZ Subnet B",
+      "pProductionPublicSubnetB": {
+         "Description": "ProductionPublic Subnet B",
          "Type": "String"
       },
-      "pAppPrivateSubnetA" : {
-         "Description": "Existing WebApp Private Subnet A",
+      "pProductionPrivateSubnetA" : {
+         "Description": "ProductionPrivate Subnet A",
          "Type": "String"
       },
-      "pAppPrivateSubnetB" : {
-         "Description": "Existing WebApp Private Subnet A",
+      "pProductionPrivateSubnetB" : {
+         "Description": "ProductionPrivate Subnet A",
          "Type": "String"
       },
       "pS3WebContentBucketName": {
@@ -78,7 +78,7 @@
       "rSecurityGroupWeb": {
          "Type": "AWS::EC2::SecurityGroup",
          "Properties": {
-            "GroupDescription": "Security group for Reverse Proxy in DMZ",
+            "GroupDescription": "Security group for Reverse Proxy in ProductionPublic",
             "VpcId": {
                "Ref": "pProductionVPC"
             },
@@ -114,7 +114,7 @@
 	 "Condition" : "cCreateVPCManagement",
          "Type": "AWS::EC2::SecurityGroup",
          "Properties": {
-            "GroupDescription": "Security group for Bastion Host in DMZ",
+            "GroupDescription": "Security group for Bastion Host in ProductionPublic",
             "VpcId": {
                "Ref": "pVPCManagement"
             },
@@ -181,19 +181,7 @@
             ]
          }
       },
-     "rSecurityGroupRDS" : {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties" : {
-        "GroupDescription": "Port 3306 database for access",
-	"VpcId" : { "Ref" : "pProductionVPC" },
-        "SecurityGroupIngress" : [{
-          "IpProtocol" : "tcp",
-          "FromPort" : "3306",
-          "ToPort" : "3306",
-          "SourceSecurityGroupId" : { "Ref" : "rSecurityGroupApp" }
-        }]
-       }
-     },
+
       "rWebContentBucket": {
          "Type": "AWS::S3::Bucket",
 	 "Condition" : "cCreateWebContentBucket",
@@ -337,9 +325,6 @@
          "Value": {
             "Ref": "rSecurityGroupApp"
          }
-      },
-      "rSecurityGroupRDS" : {
-	"Value" : { "Ref" : "rSecurityGroupRDS" }
       }
    }
 }

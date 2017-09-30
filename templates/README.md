@@ -42,21 +42,19 @@ To get yourself going:
 ```keyname="your-ec2-keypair-name"
 az1="choose-an-availabilty-zone"
 az2="choose-a-different-availabilty-zone-in-same-region"
-dbpass="a-secure-password"
 keyname="your-keypair"
 # if you already have cloudtrail set up, leave this as false
 newaccount=false
 
 aws cloudformation create-stack --stack-name goldbase-$(date +%Y%m%d%H%M%S) \
-  --template-body file://main-webapp-linux.json \
+  --template-body file://main-infrastructure.json \
   --disable-rollback \
   --capabilities="CAPABILITY_IAM" \
   --parameters \
     ParameterKey=pKeyName,ParameterValue=$keyname \
     ParameterKey=pRegionAZ2Name,ParameterValue=$az1 \
     ParameterKey=pRegionAZ1Name,ParameterValue=$az2 \
-    ParameterKey=pCreateCloudTrail,ParameterValue=$newaccount \
-    ParameterKey=pDBPassword,ParameterValue=$password
+    ParameterKey=pCreateCloudTrail,ParameterValue=$newaccount
 ```
 
-It'll take about 30m for everything to get up and running (and probably like 25 of those are RDS.) 
+It'll take less than 5 minutes to create the network infrastructure and IAM 

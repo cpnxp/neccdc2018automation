@@ -3,8 +3,8 @@
    "Description": "Provides resources directly required for the application, such as EC2 instances, autoscaling groups, and databases",
     "Metadata" : {
         "Stack" : {"Value" : "4"},
-        "VersionDate" : { "Value" : "09292015" },
-        "Identifier" : { "Value" : "stack4-application-01" },
+        "VersionDate" : { "Value" : "09302017" },
+        "Identifier" : { "Value" : "stack4-application" },
         "Input" : { "Description" : "VPC, SubnetIDs, S3 bucket names, CIDR blocks, KeyNames, AMIs, DB name and password" },
         "Output" : { "Description" : "Outputs ID of all deployed resources" }
     },
@@ -26,24 +26,24 @@
          "Description": "Production VPC",
          "Type": "String"
       },
-      "pDMZSubnetA": {
-         "Description": "DMZ Subnet A",
+      "pProductionPublicSubnetA": {
+         "Description": "ProductionPublic Subnet A",
          "Type": "String"
       },
-      "pDMZSubnetB": {
-         "Description": "DMZ Subnet B",
+      "pProductionPublicSubnetB": {
+         "Description": "ProductionPublic Subnet B",
          "Type": "String"
       },
-      "pManagementSubnetA": {
-         "Description": "rManagementSubnetA",
+      "pManagementPublicSubnetA": {
+         "Description": "rManagementPublicSubnetA",
          "Type": "String"
       },
-      "pAppPrivateSubnetA": {
-         "Description": "WebApp Subnet A",
+      "pProductionPrivateSubnetA": {
+         "Description": "ProductionPrivate Subnet A",
          "Type": "String"
       },
-      "pAppPrivateSubnetB": {
-         "Description": "WebApp Subnet A",
+      "pProductionPrivateSubnetB": {
+         "Description": "ProductionPrivate Subnet A",
          "Type": "String"
       },
       "pWebInstanceType": {
@@ -59,27 +59,27 @@
          "Type": "String"
       },
       "pSecurityGroupApp": {
-         "Description": "SG for Webapp",
+         "Description": "SG for ProductionPrivate",
          "Type": "String"
       },
       "pSecurityGroupMgmtBastionHost": {
          "Description": "SG for MGMT Bastion",
          "Type": "String"
       },
-      "pDBPrivateSubnetA": {
-         "Description": "rDBPrivateSubnetA",
+      "pManagementPrivateSubnetA": {
+         "Description": "rManagementPrivateSubnetA",
          "Type": "String"
       },
-      "pDBPrivateSubnetB": {
-         "Description": "rDBPrivateSubnetB",
+      "pManagementPrivateSubnetB": {
+         "Description": "rManagementPrivateSubnetB",
          "Type": "String"
       },
       "pRegionAZ1Name": {
-         "Description": "rDBPrivateSubnetB",
+         "Description": "rProductionPrivateSubnetB",
          "Type": "String"
       },
       "pRegionAZ2Name": {
-         "Description": "rDBPrivateSubnetB",
+         "Description": "rProductionPrivateSubnetB",
          "Type": "String"
       },
       "pWebServerAMI": {
@@ -91,30 +91,6 @@
          "Description": "Which App AMI do you want to use?",
          "Type": "String",
 	 "Default" : "none"
-      },
-      "pDBName" : {
-	 "Description" : "Name of RDS Database",
-	 "Type" : "String"
-      },
-      "pDBUser" : {
-	 "Description" : "Username of DB Instance",
-	 "Type" : "String"
-      },
-      "pDBPassword" : {
-	 "Description" : "Password of DB Instance",
-	 "Type" : "String"
-      },
-      "pDBClass" : {
-	 "Description" : "Instance class of RDS instance",
-	 "Type" : "String"
-      },
-      "pDBAllocatedStorage" : {
-	 "Description" : "Allocated Storage (in GB) for RDS instance",
-	 "Type" : "String"
-      },
-      "pSecurityGroupRDS" : {
-	 "Description" : "Security group for MySQLRDS",
-	 "Type" : "String"
       }
    },
    "Mappings": {
@@ -284,21 +260,10 @@
    "Conditions": {
       "cCreateVPCManagement" : {
          "Fn::Not" : [
-            { "Fn::Equals": [{"Ref": "pManagementSubnetA"},"false"] }
+            { "Fn::Equals": [{"Ref": "pManagementPublicSubnetA"},"false"] }
          ]
       },
-	"cCreaterRDSInstanceMySQL" : {
-         "Fn::Not": [
-            {
-               "Fn::Equals": [
-                  {
-                     "Ref": "pDBName"
-                  },
-                  "none"
-               ]
-            }
-         ]
-        },
+
         "cCreateAppInstance": {
          "Fn::Not": [
             {
@@ -351,7 +316,7 @@
          "Type": "AWS::EC2::NetworkInterface",
          "Properties": {
             "SubnetId": {
-               "Ref": "pManagementSubnetA"
+               "Ref": "pManagementPublicSubnetA"
             },
             "Description": "Interface for control traffic such as SSH",
             "GroupSet": [
@@ -411,37 +376,17 @@
             ]
          }
       },
-  	"rDBSubnetGroup" : {
-         "Type" : "AWS::RDS::DBSubnetGroup",
-         "Properties" : {
-            "DBSubnetGroupDescription" : "MySQL RDS Subnet Group",
-            "SubnetIds" : [ { "Ref" : "pDBPrivateSubnetA" }, { "Ref" : "pDBPrivateSubnetB" } ]
-         }
-      },
-    "rRDSInstanceMySQL" : {
-      "Type": "AWS::RDS::DBInstance",
-      "DependsOn" : "rDBSubnetGroup",
-      "Condition" : "cCreaterRDSInstanceMySQL",
-      "Properties": {
-        "DBName"            : { "Ref" : "pDBName" },
-        "Engine"            : "aurora",
-	"MasterUsername"    : "unused",
-	"MasterUserPassword" : "unusedpassword",
-        "MultiAZ"           : "false",
-        "StorageEncrypted"  : "true",
-        "DBInstanceClass"   : { "Ref" : "pDBClass" },
-	"DBSubnetGroupName" : { "Ref" : "rDBSubnetGroup" }
-      }
-    },
+
+
       "rELBApp": {
          "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
          "Properties": {
             "Subnets": [
                {
-                  "Ref": "pAppPrivateSubnetA"
+                  "Ref": "pProductionPrivateSubnetA"
                },
                {
-                  "Ref": "pAppPrivateSubnetB"
+                  "Ref": "pProductionPrivateSubnetB"
                }
             ],
             "HealthCheck": {
@@ -478,10 +423,10 @@
          "Properties": {
             "Subnets": [
                {
-                  "Ref": "pDMZSubnetA"
+                  "Ref": "pProductionPublicSubnetA"
                },
                {
-                  "Ref": "pDMZSubnetB"
+                  "Ref": "pProductionPublicSubnetB"
                }
             ],
             "HealthCheck": {
@@ -596,10 +541,10 @@
             ],
             "VPCZoneIdentifier": [
                {
-                  "Ref": "pDMZSubnetA"
+                  "Ref": "pProductionPublicSubnetA"
                },
                {
-                  "Ref": "pDMZSubnetB"
+                  "Ref": "pProductionPublicSubnetB"
                }
             ],
             "LaunchConfigurationName": {
@@ -679,7 +624,7 @@
             "EvaluationPeriods": "1",
             "Statistic": "Average",
             "Threshold": "10",
-            "AlarmDescription": "Alarm if CPU too too, remove a webserver",
+            "AlarmDescription": "Alarm if CPU too low, remove a webserver",
             "Period": "60",
             "AlarmActions": [
                {
@@ -699,242 +644,7 @@
             "MetricName": "CPUUtilization"
          }
       },
-      "rAutoScalingConfigApp": {
-         "Type": "AWS::AutoScaling::LaunchConfiguration",
-         "DependsOn" : "rRDSInstanceMySQL",
-         "Condition" : "cCreateAppInstance",
-                 "Metadata" : {
-        "AWS::CloudFormation::Init" : {
-          "configSets" : {
-            "wordpress_install" : ["install_cfn", "install_wordpress" ]
-          },
-          "install_cfn" : {
-            "files": {
-              "/etc/cfn/cfn-hup.conf": {
-                "content": { "Fn::Join": [ "", [
-                  "[main]\n",
-                  "stack=", { "Ref": "AWS::StackId" }, "\n",
-                  "region=", { "Ref": "AWS::Region" }, "\n"
-                ]]},
-                "mode"  : "000400",
-                "owner" : "root",
-                "group" : "root"
-              },
-              "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
-                "content": { "Fn::Join": [ "", [
-                  "[cfn-auto-reloader-hook]\n",
-                  "triggers=post.update\n",
-                  "path=Resources.rAutoScalingConfigApp.Metadata.AWS::CloudFormation::Init\n",
-                  "action=/opt/aws/bin/cfn-init -v ",
-                          "         --stack ", { "Ref" : "AWS::StackName" },
-                          "         --resource rAutoScalingConfigApp ",
-                          "         --configsets wordpress_install ",
-                          "         --region ", { "Ref" : "AWS::Region" }, "\n"
-                ]]},
-                "mode"  : "000400",
-                "owner" : "root",
-                "group" : "root"
-              }
-            },
-            "services" : {
-              "sysvinit" : {
-                "cfn-hup" : { "enabled" : "true", "ensureRunning" : "true",
-                              "files" : ["/etc/cfn/cfn-hup.conf", "/etc/cfn/hooks.d/cfn-auto-reloader.conf"]}
-              }
-            }
-          },
-
-          "install_wordpress" : {
-            "packages" : {
-              "yum" : {
-                "php"       : [],
-                "php-mysql" : [],
-                "mysql"     : [],
-                "httpd"     : []
-              }
-            },
-            "sources" : {
-              "/var/www/html" : "http://wordpress.org/latest.tar.gz"
-            },
-            "files" : {
-              "/tmp/create-wp-config" : {
-                "content" : { "Fn::Join" : [ "", [
-                  "#!/bin/bash\n",
-                  "cp /var/www/html/wordpress/wp-config-sample.php /var/www/html/wordpress/wp-config.php\n",
-                  "sed -i \"s/'database_name_here'/'",{ "Ref" : "pDBName" }, "'/g\" wp-config.php\n",
-                  "sed -i \"s/'username_here'/'",{ "Ref" : "pDBUser" }, "'/g\" wp-config.php\n",
-                  "sed -i \"s/'password_here'/'",{ "Ref" : "pDBPassword" }, "'/g\" wp-config.php\n",
-                  "sed -i \"s/'localhost'/'",{ "Fn::GetAtt" : [ "rRDSInstanceMySQL", "Endpoint.Address" ] }, "'/g\" wp-config.php\n"
-                ]]},
-                "mode" : "000500",
-                "owner" : "root",
-                "group" : "root"
-              }
-            },
-            "commands" : {
-              "01_configure_wordpress" : {
-                "command" : "/tmp/create-wp-config",
-                "cwd" : "/var/www/html/wordpress"
-              }
-            },
-            "services" : {
-              "sysvinit" : {
-                "httpd" : { "enabled" : "true", "ensureRunning" : "true" }
-              }
-            }
-          }
-        }
-      },
-         "Properties": {
-            "ImageId": {
-               "Ref": "pAppAmi"
-            },
-            "InstanceType": {
-               "Ref": "pAppInstanceType"
-            },
-            "KeyName": {
-               "Ref": "pKeyName"
-            },
-            "SecurityGroups": [
-               {
-                  "Ref": "pSecurityGroupApp"
-               }
-            ],
-        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
-                       "#!/bin/bash -xe\n",
-                       "yum update -y aws-cfn-bootstrap\n",
-
-                       "/opt/aws/bin/cfn-init -v ",
-                       "         --stack ", { "Ref" : "AWS::StackName" },
-                       "         --resource rAutoScalingConfigApp ",
-                       "         --configsets wordpress_install ",
-                       "         --region ", { "Ref" : "AWS::Region" }, "\n",
-
-                       "/opt/aws/bin/cfn-signal -e $? ",
-                       "         --stack ", { "Ref" : "AWS::StackName" },
-                       "         --resource WebServerGroup ",
-                       "         --region ", { "Ref" : "AWS::Region" }, "\n"
-        ]]}}
-         }
-      },
-      "rAutoScalingGroupApp": {
-         "Type": "AWS::AutoScaling::AutoScalingGroup",
-         "DependsOn" : "rAutoScalingConfigApp",
-         "Condition" : "cCreateAppInstance",
-         "Properties": {
-            "AvailabilityZones": [
-               {
-                  "Ref": "pRegionAZ1Name"
-               },
-               {
-                  "Ref": "pRegionAZ2Name"
-               }
-            ],
-            "VPCZoneIdentifier": [
-	       {
-		  "Ref" : "pAppPrivateSubnetA"
-	       },
-               {
-                  "Ref": "pAppPrivateSubnetB"
-               }
-            ],
-            "LaunchConfigurationName": {
-               "Ref": "rAutoScalingConfigApp"
-            },
-            "MinSize": "2",
-            "MaxSize": "4",
-            "LoadBalancerNames": [
-               {
-                  "Ref": "rELBApp"
-               }
-            ],
-            "Tags": [
-               {
-                  "Key": "Name",
-                  "Value": "AppServer",
-                  "PropagateAtLaunch": "true"
-               }
-            ]
-         }
-      },
-      "rAutoScalingDownApp": {
-         "Type": "AWS::AutoScaling::ScalingPolicy",
-         "Condition" : "cCreateAppInstance",
-         "Properties": {
-            "AdjustmentType": "ChangeInCapacity",
-            "AutoScalingGroupName": {
-               "Ref": "rAutoScalingGroupApp"
-            },
-            "Cooldown": "1",
-            "ScalingAdjustment": "1"
-         }
-      },
-      "rAutoScalingUpApp": {
-         "Type": "AWS::AutoScaling::ScalingPolicy",
-         "Condition" : "cCreateAppInstance",
-         "Properties": {
-            "AdjustmentType": "ChangeInCapacity",
-            "AutoScalingGroupName": {
-               "Ref": "rAutoScalingGroupApp"
-            },
-            "Cooldown": "1",
-            "ScalingAdjustment": "-1"
-         }
-      },
-      "rCWAlarmHighCPUApp": {
-         "Type": "AWS::CloudWatch::Alarm",
-         "Condition" : "cCreateAppInstance",
-         "Properties": {
-            "EvaluationPeriods": "1",
-            "Statistic": "Average",
-            "Threshold": "50",
-            "AlarmDescription": "Alarm if CPU too high or metric disappears indicating instance is down",
-            "Period": "60",
-            "AlarmActions": [
-               {
-                  "Ref": "rAutoScalingDownApp"
-               }
-            ],
-            "Namespace": "AWS/EC2",
-            "Dimensions": [
-               {
-                  "Name": "AutoScalingGroupName",
-                  "Value": {
-                     "Ref": "rAutoScalingGroupApp"
-                  }
-               }
-            ],
-            "ComparisonOperator": "GreaterThanThreshold",
-            "MetricName": "CPUUtilization"
-         }
-      },
-      "rCWAlarmLowCPUApp": {
-         "Type": "AWS::CloudWatch::Alarm",
-         "Condition" : "cCreateAppInstance",
-         "Properties": {
-            "EvaluationPeriods": "1",
-            "Statistic": "Average",
-            "Threshold": "10",
-            "AlarmDescription": "Alarm if CPU too too, remove a webseerver",
-            "Period": "60",
-            "AlarmActions": [
-               {
-                  "Ref": "rAutoScalingUpApp"
-               }
-            ],
-            "Namespace": "AWS/EC2",
-            "Dimensions": [
-               {
-                  "Name": "AutoScalingGroupName",
-                  "Value": {
-                     "Ref": "rAutoScalingGroupApp"
-                  }
-               }
-            ],
-            "ComparisonOperator": "LessThanThreshold",
-            "MetricName": "CPUUtilization"
-         }
-      }
+      
    },
    "Outputs" : {
 	    "WebsiteURL" : {

@@ -15,12 +15,11 @@
         state: "present"
         region: "us-east-1"
         disable_rollback: false
-        template: "templates/main-webapp-linux.json"
+        template: "templates/main-infrastructure.json"
         template_parameters:
           pKeyName: "neccdc2"
           pRegionAZ1Name: "us-east-1a"
           pRegionAZ2Name: "us-east-1b"
-          pDBPassword: "unuused"
           pCreateCloudTrail: "no"
           stack4URL: ""
         tags:

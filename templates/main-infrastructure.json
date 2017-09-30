@@ -1,10 +1,10 @@
 {
    "AWSTemplateFormatVersion": "2010-09-09",
-   "Description": "This template will deploy a full environment with a 3 tier linux-based web application, including IAM, VPC, and application. Must have full admin rights to deploy. ",
+   "Description": "This template will deploy a full Northeast CCDC environment. Must have full admin rights to deploy. ",
     "Metadata" : {
         "Stack" : {"Value" : "0"},
         "VersionDate" : { "Value" : "09292015" },
-        "Identifier" : { "Value" : "main-webapp-linux-01" },
+        "Identifier" : { "Value" : "main-infrastructure" },
         "Input" : { "Description" : "Input of all required parameters in nested stacks" },
         "Output" : { "Description" : "N/A" }
     },
@@ -195,48 +195,35 @@
          "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
          "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
       },
-      "pDMZSubnetACIDR": {
-         "Description": "CIDR block for DMZ AZ-1b subnet",
+      "pProductionPublicACIDR": {
+         "Description": "CIDR block for ProductionPublic AZ-1b subnet",
          "Type": "String",
          "Default": "10.100.1.0/24",
          "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
          "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
       },
-      "pDMZSubnetBCIDR": {
-         "Description": "CIDR block for DMZ AZ-1b subnet",
+      "pProductionPublicBCIDR": {
+         "Description": "CIDR block for ProductionPublic AZ-1b subnet",
          "Type": "String",
          "Default": "10.100.2.0/24",
          "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
          "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
       },
-      "pAppPrivateSubnetACIDR": {
+      "pProductionPrivateSubnetACIDR": {
          "Description": "CIDR block for Public AZ-1a subnet",
-         "Type": "String",
-         "Default": "10.100.10.0/24",
-         "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-         "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
-      },
-      "pAppPrivateSubnetBCIDR": {
-         "Description": "CIDR block for Public AZ-1b subnet",
          "Type": "String",
          "Default": "10.100.11.0/24",
          "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
          "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
       },
-      "pDBPrivateSubnetACIDR": {
-         "Description": "CIDR block for Private AZ-1a subnet",
+      "pProductionPrivateSubnetBCIDR": {
+         "Description": "CIDR block for Public AZ-1b subnet",
          "Type": "String",
-         "Default": "10.100.20.0/24",
+         "Default": "10.100.12.0/24",
          "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
          "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
       },
-      "pDBPrivateSubnetBCIDR": {
-         "Description": "CIDR block for Private AZ-1b subnet",
-         "Type": "String",
-         "Default": "10.100.21.0/24",
-         "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-         "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
-      },
+
       "pManagementCIDR": {
          "Description": "CIDR block for Management VPC",
          "Type": "String",
@@ -244,19 +231,33 @@
          "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
          "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
       },
-      "pManagementSubnetACIDR": {
+      "pManagementPublicACIDR": {
          "Description": "CIDR block for Management AZ-1a subnet",
          "Type": "String",
          "Default": "10.10.1.0/24",
          "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
          "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
       },
-      "pManagementSubnetBCIDR": {
+      "pManagementPublicBCIDR": {
          "Description": "CIDR block for Management AZ-1b subnet",
          "Type": "String",
          "Default": "10.10.2.0/24",
          "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
          "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+      },
+      "pManagementPrivateACIDR": {
+	 "Description": "CIDR block for Private AZ-1a subnet",
+	 "Type": "String",
+	 "Default": "10.10.11.0/24",
+	 "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+	 "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+      },
+      "pManagementPrivateBCIDR": {
+	 "Description": "CIDR block for Private AZ-1b subnet",
+	 "Type": "String",
+	 "Default": "10.10.12.0/24",
+	 "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+	 "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
       },
       "pDevelopmentCIDR": {
          "Description": "CIDR block for Development VPC",
@@ -297,22 +298,22 @@
       "stack1URL": {
          "Description": "Valid S3 URL of location where infrastructure template exists",
          "Type": "String",
-         "Default": "https://s3.amazonaws.com/neccdc2018/stack1-access-01.json"
+         "Default": "https://s3.amazonaws.com/neccdc2018/stack1-access.json"
       },
       "stack2URL": {
          "Description": "Valid S3 URL of location where Stack2 template exists",
          "Type": "String",
-         "Default": "https://s3.amazonaws.com/neccdc2018/stack2-network-01.json"
+         "Default": "https://s3.amazonaws.com/neccdc2018/stack2-network.json"
       },
       "stack3URL": {
          "Description": "Valid S3 URL of location where Stack3 template exists",
          "Type": "String",
-         "Default": "https://s3.amazonaws.com/neccdc2018/stack3-resources-01.json"
+         "Default": "https://s3.amazonaws.com/neccdc2018/stack3-resources.json"
       },
       "stack4URL": {
          "Description": "Valid S3 URL of location where Stack4 template exists",
          "Type": "String",
-	 "Default" : "https://s3.amazonaws.com/neccdc2018/stack4-application-01.json"
+	 "Default" : "https://s3.amazonaws.com/neccdc2018/stack4-application.json"
       },
       "pWebServerAMI": {
          "Description": "Which webserver AMI do you want to use, default ",
@@ -324,31 +325,7 @@
          "Type": "String",
 	 "Default" : "ami-60b6c60a"
       },
-      "pDBName" : {
-         "Description" : "Name of RDS Database",
-         "Type" : "String",
-         "Default" : "TestDB"
-      },
-      "pDBUser" : {
-         "Description" : "Username of RDS DB Instance",
-         "Type" : "String",
-	 "Default" : "Administrator"
-      },
-      "pDBPassword" : {
-         "Description" : "*Password of RDS DB Instance (minimum 8 characters)",
-         "Type" : "String",
-	 "NoEcho" : "True"
-      },
-      "pDBClass" : {
-         "Description" : "Instance class of RDS instance",
-         "Type" : "String",
-	 "Default" : "db.t2.medium"
-      },
-      "pDBAllocatedStorage" : {
-         "Description" : "Allocated Storage (in GB) for RDS instance",
-         "Type" : "String",
-	 "Default" : "10"
-      },
+
       "createVPCManagement" : {
 	 "Description" : "Create Management VPC? (yes/no)",
 	"Type" : "String",
@@ -484,29 +461,29 @@
                "pNatInstanceType": {
                   "Ref": "pNatInstanceType"
                },
-               "pDMZSubnetACIDR": {
-                  "Ref": "pDMZSubnetACIDR"
+               "pProductionPublicACIDR": {
+                  "Ref": "pProductionPublicACIDR"
                },
-               "pDMZSubnetBCIDR": {
-                  "Ref": "pDMZSubnetBCIDR"
+               "pProductionPublicBCIDR": {
+                  "Ref": "pProductionPublicBCIDR"
                },
-               "pAppPrivateSubnetACIDR": {
-                  "Ref": "pAppPrivateSubnetACIDR"
+               "pProductionPrivateSubnetACIDR": {
+                  "Ref": "pProductionPrivateSubnetACIDR"
                },
-               "pAppPrivateSubnetBCIDR": {
-                  "Ref": "pAppPrivateSubnetBCIDR"
+               "pProductionPrivateSubnetBCIDR": {
+                  "Ref": "pProductionPrivateSubnetBCIDR"
                },
-               "pDBPrivateSubnetACIDR": {
-                  "Ref": "pDBPrivateSubnetACIDR"
+               "pManagementPrivateACIDR": {
+                  "Ref": "pManagementPrivateACIDR"
                },
                "pManagementCIDR": {
 		    "Fn::If" : [ "CreateVPCManagement", { "Ref" : "pManagementCIDR" },"false"]
                },
-               "pManagementSubnetACIDR": {
-		    "Fn::If" : [ "CreateVPCManagement", { "Ref" : "pManagementSubnetACIDR" },"false"]
+               "pManagementPublicACIDR": {
+		    "Fn::If" : [ "CreateVPCManagement", { "Ref" : "pManagementPublicACIDR" },"false"]
                },
-               "pManagementSubnetBCIDR": {
-		    "Fn::If" : [ "CreateVPCManagement", { "Ref" : "pManagementSubnetBCIDR" },"false"]
+               "pManagementPublicBCIDR": {
+		    "Fn::If" : [ "CreateVPCManagement", { "Ref" : "pManagementPublicBCIDR" },"false"]
                },
                "pDevelopmentCIDR": {
 		  "Fn::If" : [ "CreateVPCDevelopment", { "Ref" : "pDevelopmentCIDR" },"false"]
@@ -520,8 +497,8 @@
                "pKeyName": {
                   "Ref": "pKeyName"
                },
-               "pDBPrivateSubnetBCIDR": {
-                  "Ref": "pDBPrivateSubnetBCIDR"
+               "pManagementPrivateBCIDR": {
+                  "Ref": "pManagementPrivateBCIDR"
                }
             }
          }
@@ -542,17 +519,17 @@
                "pProductionCIDR": {
                   "Ref": "pProductionCIDR"
                },
-               "pDMZSubnetA": {
-			"Fn::GetAtt" : [ "stack2", "Outputs.rDMZSubnetA" ]
+               "pProductionPublicSubnetA": {
+			"Fn::GetAtt" : [ "stack2", "Outputs.rProductionPublicSubnetA" ]
                },
-               "pDMZSubnetB": {
-			"Fn::GetAtt" : [ "stack2", "Outputs.rDMZSubnetB" ]
+               "pProductionPublicSubnetB": {
+			"Fn::GetAtt" : [ "stack2", "Outputs.rProductionPublicSubnetB" ]
                },
-               "pAppPrivateSubnetA": {
-			"Fn::GetAtt" : [ "stack2", "Outputs.rAppPrivateSubnetA" ]
+               "pProductionPrivateSubnetA": {
+			"Fn::GetAtt" : [ "stack2", "Outputs.rProductionPrivateSubnetA" ]
                },
-               "pAppPrivateSubnetB": {
-			"Fn::GetAtt" : [ "stack2", "Outputs.rAppPrivateSubnetB" ]
+               "pProductionPrivateSubnetB": {
+			"Fn::GetAtt" : [ "stack2", "Outputs.rProductionPrivateSubnetB" ]
                },
                "pS3WebContentBucketName" : {
 		"Fn::If" : [ "CreateWebAppBucket", { "Ref" : "pWebContentBucketName" },"false"]
@@ -585,23 +562,23 @@
                "pProductionCIDR": {
                   "Ref": "pProductionCIDR"
                },
-               "pDMZSubnetA": {
-		 "Fn::GetAtt" : [ "stack2", "Outputs.rDMZSubnetA" ]
+               "pProductionPublicSubnetA": {
+		 "Fn::GetAtt" : [ "stack2", "Outputs.rProductionPublicSubnetA" ]
                },
-               "pDMZSubnetB": {
-		 "Fn::GetAtt" : [ "stack2", "Outputs.rDMZSubnetB" ]
+               "pProductionPublicSubnetB": {
+		 "Fn::GetAtt" : [ "stack2", "Outputs.rProductionPublicSubnetB" ]
                },
-               "pDBPrivateSubnetA": {
-		 "Fn::GetAtt" : [ "stack2", "Outputs.rDBPrivateSubnetA" ]
+               "pManagementPrivateSubnetA": {
+		 "Fn::GetAtt" : [ "stack2", "Outputs.rManagementPrivateSubnetA" ]
                },
-               "pDBPrivateSubnetB": {
-		 "Fn::GetAtt" : [ "stack2", "Outputs.rDBPrivateSubnetB" ]
+               "pManagementPrivateSubnetB": {
+		 "Fn::GetAtt" : [ "stack2", "Outputs.rManagementPrivateSubnetB" ]
                },
-               "pAppPrivateSubnetA": {
-		 "Fn::GetAtt" : [ "stack2", "Outputs.rAppPrivateSubnetA" ]
+               "pProductionPrivateSubnetA": {
+		 "Fn::GetAtt" : [ "stack2", "Outputs.rProductionPrivateSubnetA" ]
                },
-               "pAppPrivateSubnetB": {
-		 "Fn::GetAtt" : [ "stack2", "Outputs.rAppPrivateSubnetB" ]
+               "pProductionPrivateSubnetB": {
+		 "Fn::GetAtt" : [ "stack2", "Outputs.rProductionPrivateSubnetB" ]
                },
                "pKeyName": {
                   "Ref": "pKeyName"
@@ -645,16 +622,9 @@
                "pAppAmi": {
                   "Ref": "pAppAmi"
                },
-	       "pSecurityGroupRDS" : {
-		  "Fn::GetAtt" : [ "stack3","Outputs.rSecurityGroupRDS" ]
-		},
-	       "pDBName" : { "Ref" : "pDBName" },
-		"pDBUser" : { "Ref" : "pDBUser" },
-		"pDBPassword" : { "Ref" : "pDBPassword" },
-		"pDBClass" : { "Ref" : "pDBClass" },
-		"pDBAllocatedStorage" : { "Ref" : "pDBAllocatedStorage" },
-               "pManagementSubnetA": {
-		   "Fn::If" : [ "CreateVPCManagement", { "Fn::GetAtt": ["stack2","Outputs.rManagementSubnetA" ] },"false"]
+
+               "pManagementPublicSubnetA": {
+		   "Fn::If" : [ "CreateVPCManagement", { "Fn::GetAtt": ["stack2","Outputs.rManagementPublicSubnetA" ] },"false"]
                }
 		}
          }

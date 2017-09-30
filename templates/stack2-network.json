@@ -1,10 +1,10 @@
 {
    "AWSTemplateFormatVersion": "2010-09-09",
-   "Description": "Provides networking configuration for a standard, public facing application, with optional management and development VPCs",
+   "Description": "Provides networking configuration for management and development VPCs",
     "Metadata" : {
         "Stack" : {"Value" : "2"},
-        "VersionDate" : { "Value" : "09292015" },
-        "Identifier" : { "Value" : "stack2-network-01" },
+        "VersionDate" : { "Value" : "09302017" },
+        "Identifier" : { "Value" : "stack2-network" },
         "Input" : { "Description" : "CIDR blocks, VPC names, KeyName, EC2 instance size" },
         "Output" : { "Description" : "Outputs ID of all deployed resources" }
     },
@@ -17,12 +17,12 @@
       "pRegionAZ1Name": {
          "Description": "Availability Zone 1 Name in Region",
          "Type": "String",
-         "Default": "us-east-1b"
+         "Default": "us-east-1a"
       },
       "pRegionAZ2Name": {
          "Description": "Availability Zone 2 Name in Region",
          "Type": "String",
-         "Default": "us-west-1c"
+         "Default": "us-east-1b"
       },
       "pProductionVPCName": {
          "Description": "Production VPC Name",
@@ -49,45 +49,45 @@
          "Type": "String",
          "Default": "10.10.0.0/16"
       },
-      "pManagementSubnetACIDR": {
-         "Description": "CIDR block for Management AZ-1a subnet",
+      "pManagementPublicACIDR": {
+         "Description": "CIDR block for ManagementPublic AZ-1a subnet",
          "Type": "String",
          "Default": "10.10.1.0/24"
       },
-      "pManagementSubnetBCIDR": {
-         "Description": "CIDR block for Management AZ-1b subnet",
+      "pManagementPublicBCIDR": {
+         "Description": "CIDR block for ManagementPublic AZ-1b subnet",
          "Type": "String",
          "Default": "10.10.2.0/24"
       },
-      "pDMZSubnetACIDR": {
-         "Description": "CIDR block for DMZ AZ-1b subnet",
+      "pProductionPublicACIDR": {
+         "Description": "CIDR block for ProductionPublic AZ-1a subnet",
          "Type": "String",
          "Default": "10.100.1.0/24"
       },
-      "pDMZSubnetBCIDR": {
-         "Description": "CIDR block for DMZ AZ-1b subnet",
+      "pProductionPublicBCIDR": {
+         "Description": "CIDR block for ProductionPublic AZ-1b subnet",
          "Type": "String",
          "Default": "10.100.2.0/24"
       },
-      "pAppPrivateSubnetACIDR": {
+      "pProductionPrivateSubnetACIDR": {
          "Description": "CIDR block for Public AZ-1a subnet",
-         "Type": "String",
-         "Default": "10.100.10.0/24"
-      },
-      "pAppPrivateSubnetBCIDR": {
-         "Description": "CIDR block for Public AZ-1b subnet",
          "Type": "String",
          "Default": "10.100.11.0/24"
       },
-      "pDBPrivateSubnetACIDR": {
+      "pProductionPrivateSubnetBCIDR": {
+         "Description": "CIDR block for Public AZ-1b subnet",
+         "Type": "String",
+         "Default": "10.100.12.0/24"
+      },
+      "pManagementPrivateACIDR": {
          "Description": "CIDR block for Private AZ-1a subnet",
          "Type": "String",
-         "Default": "10.100.20.0/24"
+         "Default": "10.10.11.0/24"
       },
-      "pDBPrivateSubnetBCIDR": {
+      "pManagementPrivateBCIDR": {
          "Description": "CIDR block for Private AZ-1b subnet",
          "Type": "String",
-         "Default": "10.100.21.0/24"
+         "Default": "10.10.12.0/24"
       },
       "pDevelopmentCIDR": {
          "Description": "CIDR block for Development VPC",
@@ -465,12 +465,12 @@
             }
          }
       },
-      "rManagementSubnetA": {
+      "rManagementPublicSubnetA": {
 	 "Condition" : "cCreateVPCManagement",
          "Type": "AWS::EC2::Subnet",
          "Properties": {
             "CidrBlock": {
-               "Ref": "pManagementSubnetACIDR"
+               "Ref": "pManagementPublicACIDR"
             },
             "AvailabilityZone": {
                "Ref": "pRegionAZ1Name"
@@ -486,12 +486,12 @@
             ]
          }
       },
-      "rManagementSubnetB": {
+      "rManagementPublicSubnetB": {
 	 "Condition" : "cCreateVPCManagement",
          "Type": "AWS::EC2::Subnet",
          "Properties": {
             "CidrBlock": {
-               "Ref": "pManagementSubnetBCIDR"
+               "Ref": "pManagementPublicBCIDR"
             },
             "AvailabilityZone": {
                "Ref": "pRegionAZ2Name"
@@ -507,11 +507,11 @@
             ]
          }
       },
-      "rDMZSubnetA": {
+      "rProductionPublicSubnetA": {
          "Type": "AWS::EC2::Subnet",
          "Properties": {
             "CidrBlock": {
-               "Ref": "pDMZSubnetACIDR"
+               "Ref": "pProductionPublicACIDR"
             },
             "AvailabilityZone": {
                "Ref": "pRegionAZ1Name"
@@ -522,16 +522,16 @@
             "Tags": [
                {
                   "Key": "Name",
-                  "Value": "DMZ Subnet A"
+                  "Value": "ProductionPublic Subnet A"
                }
             ]
          }
       },
-      "rDMZSubnetB": {
+      "rProductionPublicSubnetB": {
          "Type": "AWS::EC2::Subnet",
          "Properties": {
             "CidrBlock": {
-               "Ref": "pDMZSubnetBCIDR"
+               "Ref": "pProductionPublicBCIDR"
             },
             "AvailabilityZone": {
                "Ref": "pRegionAZ2Name"
@@ -542,16 +542,16 @@
             "Tags": [
                {
                   "Key": "Name",
-                  "Value": "DMZ Subnet B"
+                  "Value": "ProductionPublic Subnet B"
                }
             ]
          }
       },
-      "rAppPrivateSubnetA": {
+      "rProductionPrivateSubnetA": {
          "Type": "AWS::EC2::Subnet",
          "Properties": {
             "CidrBlock": {
-               "Ref": "pAppPrivateSubnetACIDR"
+               "Ref": "pProductionPrivateSubnetACIDR"
             },
             "AvailabilityZone": {
                "Ref": "pRegionAZ1Name"
@@ -562,16 +562,16 @@
             "Tags": [
                {
                   "Key": "Name",
-                  "Value": "WebApp Subnet A"
+                  "Value": "ProductionPrivate Subnet A"
                }
             ]
          }
       },
-      "rAppPrivateSubnetB": {
+      "rProductionPrivateSubnetB": {
          "Type": "AWS::EC2::Subnet",
          "Properties": {
             "CidrBlock": {
-               "Ref": "pAppPrivateSubnetBCIDR"
+               "Ref": "pProductionPrivateSubnetBCIDR"
             },
             "AvailabilityZone": {
                "Ref": "pRegionAZ2Name"
@@ -582,47 +582,47 @@
             "Tags": [
                {
                   "Key": "Name",
-                  "Value": "WebApp Subnet B"
+                  "Value": "ProductionPrivate Subnet B"
                }
             ]
          }
       },
-      "rDBPrivateSubnetA": {
+      "rManagementPrivateSubnetA": {
          "Type": "AWS::EC2::Subnet",
          "Properties": {
             "CidrBlock": {
-               "Ref": "pDBPrivateSubnetACIDR"
+               "Ref": "pManagementPrivateACIDR"
             },
             "AvailabilityZone": {
                "Ref": "pRegionAZ1Name"
             },
             "VpcId": {
-               "Ref": "rVPCProduction"
+               "Ref": "rVPCManagement"
             },
             "Tags": [
                {
                   "Key": "Name",
-                  "Value": "DB Subnet A"
+                  "Value": "ProductionPrivate Subnet A"
                }
             ]
          }
       },
-      "rDBPrivateSubnetB": {
+      "rManagementPrivateSubnetB": {
          "Type": "AWS::EC2::Subnet",
          "Properties": {
             "CidrBlock": {
-               "Ref": "pDBPrivateSubnetBCIDR"
+               "Ref": "pManagementPrivateBCIDR"
             },
             "AvailabilityZone": {
                "Ref": "pRegionAZ2Name"
             },
             "VpcId": {
-               "Ref": "rVPCProduction"
+               "Ref": "rVPCManagement"
             },
             "Tags": [
                {
                   "Key": "Name",
-                  "Value": "DB Subnet B"
+                  "Value": "ManagementPrivate Subnet B"
                }
             ]
          }
@@ -678,7 +678,7 @@
             "Tags": [
                {
                   "Key": "Name",
-                  "Value": "Route table for Production DMZ"
+                  "Value": "Route table for Production Public"
                }
             ]
          }
@@ -734,7 +734,7 @@
                "Ref": "rRouteTableMgmt"
             },
             "SubnetId": {
-               "Ref": "rManagementSubnetA"
+               "Ref": "rManagementPublicSubnetA"
             }
          }
       },
@@ -746,7 +746,7 @@
                "Ref": "rRouteTableMgmt"
             },
             "SubnetId": {
-               "Ref": "rManagementSubnetB"
+               "Ref": "rManagementPublicSubnetB"
             }
          }
       },
@@ -774,7 +774,7 @@
          "Type": "AWS::EC2::NetworkInterface",
          "Properties": {
             "SubnetId": {
-               "Ref": "rDMZSubnetA"
+               "Ref": "rProductionPublicSubnetA"
             },
             "GroupSet": [
                {
@@ -821,7 +821,7 @@
          "Type": "AWS::EC2::NetworkInterface",
          "Properties": {
             "SubnetId": {
-               "Ref": "rManagementSubnetA"
+               "Ref": "rManagementPublicSubnetA"
             },
             "GroupSet": [
                {
@@ -978,7 +978,7 @@
             "DestinationCidrBlock": "0.0.0.0/0"
          }
       },
-      "rRouteProdtoMgmtDMZ": {
+      "rRouteProdtoMgmtPublic": {
 	 "Condition" : "cCreateVPCManagement",
          "Type": "AWS::EC2::Route",
          "Properties": {
@@ -1036,47 +1036,47 @@
             }
          }
       },
-      "rRouteAssocProdDMZA": {
+      "rRouteAssocProdPublicA": {
          "Type": "AWS::EC2::SubnetRouteTableAssociation",
          "Properties": {
             "RouteTableId": {
                "Ref": "rRouteTableMain"
             },
             "SubnetId": {
-               "Ref": "rDMZSubnetA"
+               "Ref": "rProductionPublicSubnetA"
             }
          }
       },
-      "rRouteAssocProdDMZB": {
+      "rRouteAssocProdPublicB": {
          "Type": "AWS::EC2::SubnetRouteTableAssociation",
          "Properties": {
             "RouteTableId": {
                "Ref": "rRouteTableMain"
             },
             "SubnetId": {
-               "Ref": "rDMZSubnetB"
+               "Ref": "rProductionPublicSubnetB"
             }
          }
       },
-      "rAppPrivateSubnetAssoicationA": {
+      "rProductionPrivateSubnetAssoicationA": {
          "Type": "AWS::EC2::SubnetRouteTableAssociation",
          "Properties": {
             "RouteTableId": {
                "Ref": "rRouteTableProdPrivate"
             },
             "SubnetId": {
-               "Ref": "rAppPrivateSubnetA"
+               "Ref": "rProductionPrivateSubnetA"
             }
          }
       },
-      "rAppPrivateSubnetAssoicationB": {
+      "rProductionPrivateSubnetAssoicationB": {
          "Type": "AWS::EC2::SubnetRouteTableAssociation",
          "Properties": {
             "RouteTableId": {
                "Ref": "rRouteTableProdPrivate"
             },
             "SubnetId": {
-               "Ref": "rAppPrivateSubnetB"
+               "Ref": "rProductionPrivateSubnetB"
             }
          }
       },
@@ -1087,7 +1087,7 @@
                "Ref": "rRouteTableProdPrivate"
             },
             "SubnetId": {
-               "Ref": "rDBPrivateSubnetA"
+               "Ref": "rProductionPrivateSubnetA"
             }
          }
       },
@@ -1098,7 +1098,7 @@
                "Ref": "rRouteTableProdPrivate"
             },
             "SubnetId": {
-               "Ref": "rDBPrivateSubnetB"
+               "Ref": "rProductionPrivateSubnetB"
             }
          }
       },
@@ -1148,7 +1148,7 @@
                "Ref": "rNACLProduction"
             },
             "SubnetId": {
-               "Ref": "rAppPrivateSubnetB"
+               "Ref": "rProductionPrivateSubnetB"
             }
          }
       },
@@ -1159,18 +1159,18 @@
                "Ref": "rNACLProduction"
             },
             "SubnetId": {
-               "Ref": "rDMZSubnetA"
+               "Ref": "rProductionPublicSubnetA"
             }
          }
       },
-      "rNACLAssocDMZB": {
+      "rNACLAssocProdPublicB": {
          "Type": "AWS::EC2::SubnetNetworkAclAssociation",
          "Properties": {
             "NetworkAclId": {
                "Ref": "rNACLProduction"
             },
             "SubnetId": {
-               "Ref": "rDMZSubnetB"
+               "Ref": "rProductionPublicSubnetB"
             }
          }
       },
@@ -1181,7 +1181,7 @@
                "Ref": "rNACLProduction"
             },
             "SubnetId": {
-               "Ref": "rAppPrivateSubnetA"
+               "Ref": "rProductionPrivateSubnetA"
             }
          }
       },
@@ -1366,39 +1366,39 @@
 	    "Fn::If" : [ "cCreateVPCManagement", { "Ref" : "rVPCManagement" },"N/A"]
          }
       },
-      "rManagementSubnetA": {
+      "rManagementPublicSubnetA": {
          "Value": {
-	    "Fn::If" : [ "cCreateVPCManagement", { "Ref" : "rManagementSubnetA" },"N/A"]
+	    "Fn::If" : [ "cCreateVPCManagement", { "Ref" : "rManagementPublicSubnetA" },"N/A"]
          }
       },
-      "rManagementSubnetB": {
+      "rManagementPublicSubnetB": {
          "Value": {
-	    "Fn::If" : [ "cCreateVPCManagement", { "Ref" : "rManagementSubnetB" },"N/A"]
+	    "Fn::If" : [ "cCreateVPCManagement", { "Ref" : "rManagementPublicSubnetB" },"N/A"]
          }
       },
-      "rDMZSubnetA": {
+      "rProductionPublicSubnetA": {
          "Value": {
-            "Ref": "rDMZSubnetA"
+            "Ref": "rProductionPublicSubnetA"
          }
       },
-      "rDMZSubnetB": {
+      "rProductionPublicSubnetB": {
          "Value": {
-            "Ref": "rDMZSubnetB"
+            "Ref": "rProductionPublicSubnetB"
          }
       },
-      "rAppPrivateSubnetA": {
+      "rProductionPrivateSubnetA": {
          "Value": {
-            "Ref": "rAppPrivateSubnetA"
+            "Ref": "rProductionPrivateSubnetA"
          }
       },
-      "rAppPrivateSubnetB": {
+      "rProductionPrivateSubnetB": {
          "Value": {
-            "Ref": "rAppPrivateSubnetB"
+            "Ref": "rProductionPrivateSubnetB"
          }
       },
-      "rDBPrivateSubnetA": {
+      "rManagementPrivateSubnetA": {
          "Value": {
-            "Ref": "rDBPrivateSubnetA"
+            "Ref": "rProductionPrivateSubnetA"
          }
       },
       "rSecurityGroupSSHFromProd": {
@@ -1406,9 +1406,9 @@
             "Ref": "rSecurityGroupSSHFromProd"
          }
       },
-      "rDBPrivateSubnetB": {
+      "rManagementPrivateSubnetB": {
          "Value": {
-            "Ref": "rDBPrivateSubnetB"
+            "Ref": "rProductionPrivateSubnetB"
          }
       }
    }
