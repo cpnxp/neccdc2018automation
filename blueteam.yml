@@ -21,7 +21,7 @@
           pRegionAZ1Name: "us-east-1a"
           pRegionAZ2Name: "us-east-1b"
           pCreateCloudTrail: "no"
-          stack4URL: ""
+#comment          stack4URL: ""
         tags:
            Stack: "blueteam_infrastructure"
 

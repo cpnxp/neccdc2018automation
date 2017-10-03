@@ -30,7 +30,7 @@
          "Type": "String"
       },
       "pProductionPrivateSubnetB" : {
-         "Description": "ProductionPrivate Subnet A",
+         "Description": "ProductionPrivate Subnet B",
          "Type": "String"
       },
       "pS3WebContentBucketName": {
