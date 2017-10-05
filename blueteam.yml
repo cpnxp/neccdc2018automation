@@ -21,7 +21,9 @@
           pRegionAZ1Name: "us-east-1a"
           pRegionAZ2Name: "us-east-1b"
           pCreateCloudTrail: "no"
-#comment          stack4URL: ""
+# Set stack4URL to "" to turn off creating any instances          
+#          stack4URL: "https://s3.amazonaws.com/neccdc2018/stack4-application.json"
+          stack4URL: ""
         tags:
            Stack: "blueteam_infrastructure"
 

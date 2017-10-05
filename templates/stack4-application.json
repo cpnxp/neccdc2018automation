@@ -14,10 +14,6 @@
          "Type": "String",
          "Default": ""
       },
-      "pNatInstanceType": {
-         "Description": "Nat instance type",
-         "Type": "String"
-      },
       "pProductionCIDR": {
          "Description": "Production VPC CIDR",
          "Type": "String"
@@ -35,7 +31,7 @@
          "Type": "String"
       },
       "pManagementPublicSubnetA": {
-         "Description": "rManagementPublicSubnetA",
+         "Description": "rSubnetManagementPublicA",
          "Type": "String"
       },
       "pProductionPrivateSubnetA": {
@@ -46,7 +42,7 @@
          "Description": "ProductionPrivate Subnet B",
          "Type": "String"
       },
-      "pWebInstanceType": {
+      "pInstanceType": {
          "Description": "Instance type for the webservers",
          "Type": "String"
       },
@@ -67,19 +63,19 @@
          "Type": "String"
       },
       "pManagementPrivateSubnetA": {
-         "Description": "rManagementPrivateSubnetA",
+         "Description": "rSubnetManagementPrivateA",
          "Type": "String"
       },
       "pManagementPrivateSubnetB": {
-         "Description": "rManagementPrivateSubnetB",
+         "Description": "rSubnetManagementPrivateB",
          "Type": "String"
       },
       "pRegionAZ1Name": {
-         "Description": "rProductionPrivateSubnetA",
+         "Description": "rSubnetProductionPrivateA",
          "Type": "String"
       },
       "pRegionAZ2Name": {
-         "Description": "rProductionPrivateSubnetB",
+         "Description": "rSubnetProductionPrivateB",
          "Type": "String"
       },
       "pWebServerAMI": {
@@ -338,7 +334,7 @@
          "Type": "AWS::EC2::Instance",
          "Properties": {
             "InstanceType": {
-               "Ref": "pNatInstanceType"
+               "Ref": "pInstanceType"
             },
             "KeyName": {
                "Ref": "pKeyName"
@@ -349,23 +345,7 @@
                   "Value": "Management Jump Server"
                }
             ],
-            "ImageId": {
-               "Fn::FindInMap": [
-                  "AWSRegionArch2AMI",
-                  {
-                     "Ref": "AWS::Region"
-                  },
-                  {
-                     "Fn::FindInMap": [
-                        "AWSInstanceType2Arch",
-                        {
-                           "Ref": "pNatInstanceType"
-                        },
-                        "Arch"
-                     ]
-                  }
-               ]
-            },
+
             "NetworkInterfaces": [
                {
                   "NetworkInterfaceId": {
@@ -499,7 +479,7 @@
                "Ref": "pWebServerAMI"
             },
             "InstanceType": {
-               "Ref": "pWebInstanceType"
+               "Ref": "pInstanceType"
             },
             "KeyName": {
                "Ref": "pKeyName"

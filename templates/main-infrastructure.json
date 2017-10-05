@@ -30,53 +30,8 @@
          "Type": "AWS::EC2::KeyPair::KeyName",
          "Default": ""
       },
-      "pNatInstanceType": {
-         "Description": "Nat EC2 instance type",
-         "Type": "String",
-         "Default": "t1.micro",
-         "AllowedValues": [
-            "t1.micro",
-            "t2.micro",
-            "t2.small",
-            "t2.medium",
-            "m1.small",
-            "m1.medium",
-            "m1.large",
-            "m1.xlarge",
-            "m2.xlarge",
-            "m2.2xlarge",
-            "m2.4xlarge",
-            "m3.medium",
-            "m3.large",
-            "m3.xlarge",
-            "m3.2xlarge",
-            "c1.medium",
-            "c1.xlarge",
-            "c3.large",
-            "c3.xlarge",
-            "c3.2xlarge",
-            "c3.4xlarge",
-            "c3.8xlarge",
-            "g2.2xlarge",
-            "r3.large",
-            "r3.xlarge",
-            "r3.2xlarge",
-            "r3.4xlarge",
-            "r3.8xlarge",
-            "i2.xlarge",
-            "i2.2xlarge",
-            "i2.4xlarge",
-            "i2.8xlarge",
-            "hi1.4xlarge",
-            "hs1.8xlarge",
-            "cr1.8xlarge",
-            "cc2.8xlarge",
-            "cg1.4xlarge"
-         ],
-         "ConstraintDescription": "must be a valid EC2 instance type, existing in the mapping."
-      },
-      "pWebInstanceType": {
-         "Description": "WebServer EC2 instance type",
+      "pInstanceType": {
+         "Description": "EC2 instance type",
          "Type": "String",
          "Default": "t2.micro",
          "AllowedValues": [
@@ -183,11 +138,6 @@
          "Type": "String",
          "Default": "Production"
       },
-      "pDevelopmentVPCName": {
-         "Description": "Development VPC Name",
-         "Type": "String",
-         "Default": "Development"
-      },
       "pProductionCIDR": {
          "Description": "CIDR block for Production VPC",
          "Type": "String",
@@ -259,27 +209,6 @@
 	 "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
 	 "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
       },
-      "pDevelopmentCIDR": {
-         "Description": "CIDR block for Development VPC",
-         "Type": "String",
-         "Default": "10.20.0.0/16",
-         "AllowedPattern": "((\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})|False)",
-         "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
-      },
-      "pDevSubnetACIDR": {
-         "Description": "CIDR block for Development AZ-1a subnet",
-         "Type": "String",
-         "Default": "10.20.1.0/24",
-         "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-         "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
-      },
-      "pDevSubnetBCIDR": {
-         "Description": "CIDR block for Development AZ-1b subnet",
-         "Type": "String",
-         "Default": "10.20.2.0/24",
-         "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-         "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
-      },
       "pWebContentBucketName": {
          "Description": "Name of S3 Bucket to use for web content (optional)",
          "Type": "String",
@@ -330,12 +259,6 @@
 	 "Description" : "Create Management VPC? (yes/no)",
 	"Type" : "String",
 	"Default" : "yes"
-      },
-
-      "createVPCDevelopment" : {
-         "Description" : "Create Development VPC? (yes/no)",
-        "Type" : "String",
-        "Default" : "no"
       }
 
    },
@@ -344,11 +267,6 @@
 	 "Fn::Or" : [
             { "Fn::Equals": [{"Ref": "createVPCManagement"},"yes"] }, { "Fn::Equals": [{"Ref": "createVPCManagement"},"YES"]},
             { "Fn::Equals": [{"Ref": "createVPCManagement"},"true"]}, { "Fn::Equals": [{"Ref": "createVPCManagement"},"True"]}
-         ]
-      },
-      "CreateVPCDevelopment" : {
-         "Fn::Or" : [
-            { "Fn::Equals": [{"Ref": "createVPCDevelopment"},"yes"] }, { "Fn::Equals": [{"Ref": "createVPCDevelopment"},"YES"] }
          ]
       },
       "CreateWebAppBucket" : {
@@ -452,14 +370,8 @@
                "pProductionVPCName": {
                   "Ref": "pProductionVPCName"
                },
-               "pDevelopmentVPCName": {
-                  "Ref": "pDevelopmentVPCName"
-               },
                "pProductionCIDR": {
                   "Ref": "pProductionCIDR"
-               },
-               "pNatInstanceType": {
-                  "Ref": "pNatInstanceType"
                },
                "pProductionPublicACIDR": {
                   "Ref": "pProductionPublicACIDR"
@@ -484,15 +396,6 @@
                },
                "pManagementPublicBCIDR": {
 		    "Fn::If" : [ "CreateVPCManagement", { "Ref" : "pManagementPublicBCIDR" },"false"]
-               },
-               "pDevelopmentCIDR": {
-		  "Fn::If" : [ "CreateVPCDevelopment", { "Ref" : "pDevelopmentCIDR" },"false"]
-               },
-               "pDevSubnetACIDR": {
-                    "Fn::If" : [ "CreateVPCDevelopment", { "Ref" : "pDevSubnetACIDR" },"false"]
-               },
-               "pDevSubnetBCIDR": {
-                    "Fn::If" : [ "CreateVPCDevelopment", { "Ref" : "pDevSubnetBCIDR" },"false"]
                },
                "pKeyName": {
                   "Ref": "pKeyName"
@@ -520,16 +423,16 @@
                   "Ref": "pProductionCIDR"
                },
                "pProductionPublicSubnetA": {
-			"Fn::GetAtt" : [ "stack2", "Outputs.rProductionPublicSubnetA" ]
+			"Fn::GetAtt" : [ "stack2", "Outputs.rSubnetProductionPublicA" ]
                },
                "pProductionPublicSubnetB": {
-			"Fn::GetAtt" : [ "stack2", "Outputs.rProductionPublicSubnetB" ]
+			"Fn::GetAtt" : [ "stack2", "Outputs.rSubnetProductionPublicB" ]
                },
                "pProductionPrivateSubnetA": {
-			"Fn::GetAtt" : [ "stack2", "Outputs.rProductionPrivateSubnetA" ]
+			"Fn::GetAtt" : [ "stack2", "Outputs.rSubnetProductionPrivateA" ]
                },
                "pProductionPrivateSubnetB": {
-			"Fn::GetAtt" : [ "stack2", "Outputs.rProductionPrivateSubnetB" ]
+			"Fn::GetAtt" : [ "stack2", "Outputs.rSubnetProductionPrivateB" ]
                },
                "pS3WebContentBucketName" : {
 		"Fn::If" : [ "CreateWebAppBucket", { "Ref" : "pWebContentBucketName" },"false"]
@@ -563,28 +466,25 @@
                   "Ref": "pProductionCIDR"
                },
                "pProductionPublicSubnetA": {
-		 "Fn::GetAtt" : [ "stack2", "Outputs.rProductionPublicSubnetA" ]
+		 "Fn::GetAtt" : [ "stack2", "Outputs.rSubnetProductionPublicA" ]
                },
                "pProductionPublicSubnetB": {
-		 "Fn::GetAtt" : [ "stack2", "Outputs.rProductionPublicSubnetB" ]
+		 "Fn::GetAtt" : [ "stack2", "Outputs.rSubnetProductionPublicB" ]
                },
                "pManagementPrivateSubnetA": {
-		 "Fn::GetAtt" : [ "stack2", "Outputs.rManagementPrivateSubnetA" ]
+		 "Fn::GetAtt" : [ "stack2", "Outputs.rSubnetManagementPrivateA" ]
                },
                "pManagementPrivateSubnetB": {
-		 "Fn::GetAtt" : [ "stack2", "Outputs.rManagementPrivateSubnetB" ]
+		 "Fn::GetAtt" : [ "stack2", "Outputs.rSubnetManagementPrivateB" ]
                },
                "pProductionPrivateSubnetA": {
-		 "Fn::GetAtt" : [ "stack2", "Outputs.rProductionPrivateSubnetA" ]
+		 "Fn::GetAtt" : [ "stack2", "Outputs.rSubnetProductionPrivateA" ]
                },
                "pProductionPrivateSubnetB": {
-		 "Fn::GetAtt" : [ "stack2", "Outputs.rProductionPrivateSubnetB" ]
+		 "Fn::GetAtt" : [ "stack2", "Outputs.rSubnetProductionPrivateB" ]
                },
                "pKeyName": {
                   "Ref": "pKeyName"
-               },
-               "pNatInstanceType": {
-                  "Ref": "pNatInstanceType"
                },
                "pRegionAZ1Name": {
                   "Ref": "pRegionAZ1Name"
@@ -592,8 +492,8 @@
                "pRegionAZ2Name": {
                   "Ref": "pRegionAZ2Name"
                },
-               "pWebInstanceType": {
-                  "Ref": "pWebInstanceType"
+               "pInstanceType": {
+                  "Ref": "pInstanceType"
                },
                "pAppInstanceType": {
                   "Ref": "pAppInstanceType"
@@ -624,7 +524,7 @@
                },
 
                "pManagementPublicSubnetA": {
-		   "Fn::If" : [ "CreateVPCManagement", { "Fn::GetAtt": ["stack2","Outputs.rManagementPublicSubnetA" ] },"false"]
+		   "Fn::If" : [ "CreateVPCManagement", { "Fn::GetAtt": ["stack2","Outputs.rSubnetManagementPublicA" ] },"false"]
                }
 		}
          }
