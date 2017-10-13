@@ -127,16 +127,23 @@
       },
       "pRegionAZ1Name": {
          "Description": "Availability Zone 1 Name in Region",
-         "Type": "AWS::EC2::AvailabilityZone::Name"
+         "Type": "AWS::EC2::AvailabilityZone::Name",
+	 "Default": "us-east-1a"
       },
       "pRegionAZ2Name": {
          "Description": "Availability Zone 2 Name in Region",
-         "Type": "AWS::EC2::AvailabilityZone::Name"
+         "Type": "AWS::EC2::AvailabilityZone::Name",
+	 "Default": "us-east-1b"
       },
       "pProductionVPCName": {
          "Description": "Production VPC Name",
          "Type": "String",
          "Default": "Production"
+      },
+      "pHAnetwork": {
+	 "Description": "True if we want to build multiple AZs",
+	 "Type": "String",
+	 "Default": "false"
       },
       "pProductionCIDR": {
          "Description": "CIDR block for Production VPC",
@@ -178,7 +185,7 @@
          "Description": "CIDR block for Management VPC",
          "Type": "String",
          "Default": "10.10.0.0/16",
-         "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+	 "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
          "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
       },
       "pManagementPublicACIDR": {
@@ -255,19 +262,57 @@
 	 "Default" : "ami-60b6c60a"
       },
 
-      "createVPCManagement" : {
+      "pCreateProductionHA" : {
+	 "Description" : "Create multiple availibility zones for production? (yes/no)",
+	"Type" : "String",
+	"Default" : "no"
+      },
+
+      "pCreateManagementHA" : {
+	 "Description" : "Create multiple availibility zones for management? (yes/no)",
+	"Type" : "String",
+	"Default" : "no"
+      },
+
+      "pCreateVPCManagement" : {
 	 "Description" : "Create Management VPC? (yes/no)",
 	"Type" : "String",
-	"Default" : "yes"
+	"Default" : "no"
       }
 
    },
    "Conditions": {
-      "CreateVPCManagement" : {
+      "cCreateVPCManagement" : {
 	 "Fn::Or" : [
-            { "Fn::Equals": [{"Ref": "createVPCManagement"},"yes"] }, { "Fn::Equals": [{"Ref": "createVPCManagement"},"YES"]},
-            { "Fn::Equals": [{"Ref": "createVPCManagement"},"true"]}, { "Fn::Equals": [{"Ref": "createVPCManagement"},"True"]}
+            { "Fn::Equals": [{"Ref": "pCreateVPCManagement"},"yes"]},
+	    { "Fn::Equals": [{"Ref": "pCreateVPCManagement"},"YES"]},
+            { "Fn::Equals": [{"Ref": "pCreateVPCManagement"},"true"]},
+	    { "Fn::Equals": [{"Ref": "pCreateVPCManagement"},"True"]}
          ]
+      },
+      "cCreateProductionHA" : {
+	 "Fn::Or" : [
+	    { "Fn::Equals": [{"Ref": "pCreateProductionHA"},"yes"]}, 
+	    { "Fn::Equals": [{"Ref": "pCreateProductionHA"},"YES"]},
+	    { "Fn::Equals": [{"Ref": "pCreateProductionHA"},"true"]}, 
+	    { "Fn::Equals": [{"Ref": "pCreateProductionHA"},"True"]}
+	 ]
+      },
+      "cCreateManagementHA" : {
+	 "Fn::And" : [
+	    { "Fn::Or" : [
+	       { "Fn::Equals": [{"Ref": "pCreateManagementHA"},"yes"]},
+	       { "Fn::Equals": [{"Ref": "pCreateManagementHA"},"YES"]},
+	       { "Fn::Equals": [{"Ref": "pCreateManagementHA"},"true"]},
+	       { "Fn::Equals": [{"Ref": "pCreateManagementHA"},"True"]} ]
+	    },
+    	    { "Fn::Or" : [
+	       { "Fn::Equals": [{"Ref": "pCreateVPCManagement"},"yes"]},
+	       { "Fn::Equals": [{"Ref": "pCreateVPCManagement"},"YES"]},
+	       { "Fn::Equals": [{"Ref": "pCreateVPCManagement"},"true"]},
+	       { "Fn::Equals": [{"Ref": "pCreateVPCManagement"},"True"]} ]
+	    }
+	 ]
       },
       "CreateWebAppBucket" : {
 	 "Fn::Not" : [  {"Fn::Equals" : [ { "Ref" : "pWebContentBucketName" }, "none"] } ]
@@ -279,52 +324,16 @@
          "Fn::Not" : [ { "Fn::Equals" : [ { "Ref" : "pAppLogsBucketName" }, "none"] } ]
       },
       "CreateStack1": {
-         "Fn::Not": [
-            {
-               "Fn::Equals": [
-                  {
-                     "Ref": "stack1URL"
-                  },
-                  ""
-               ]
-            }
-         ]
+         "Fn::Not": [ { "Fn::Equals": [ { "Ref": "stack1URL" }, "" ] } ]
       },
       "CreateStack2": {
-         "Fn::Not": [
-            {
-               "Fn::Equals": [
-                  {
-                     "Ref": "stack2URL"
-                  },
-                  ""
-               ]
-            }
-         ]
+         "Fn::Not": [ { "Fn::Equals": [ { "Ref": "stack2URL" }, "" ] } ]
       },
       "CreateStack3": {
-         "Fn::Not": [
-            {
-               "Fn::Equals": [
-                  {
-                     "Ref": "stack3URL"
-                  },
-                  ""
-               ]
-            }
-         ]
+         "Fn::Not": [ { "Fn::Equals": [ { "Ref": "stack3URL" }, "" ] } ]
       },
       "CreateStack4": {
-         "Fn::Not": [
-            {
-               "Fn::Equals": [
-                  {
-                     "Ref": "stack4URL"
-                  },
-                  ""
-               ]
-            }
-         ]
+         "Fn::Not": [ { "Fn::Equals": [ { "Ref": "stack4URL" }, "" ] } ]
       }
    },
    "Resources": {
@@ -374,10 +383,10 @@
                   "Ref": "pProductionCIDR"
                },
                "pProductionPublicACIDR": {
-                  "Ref": "pProductionPublicACIDR"
+		  "Ref": "pProductionPublicACIDR"
                },
                "pProductionPublicBCIDR": {
-                  "Ref": "pProductionPublicBCIDR"
+		    "Fn::If" : [ "cCreateProductionHA", { "Ref" : "pProductionPublicBCIDR" }, "" ]
                },
                "pProductionPrivateSubnetACIDR": {
                   "Ref": "pProductionPrivateSubnetACIDR"
@@ -389,13 +398,13 @@
                   "Ref": "pManagementPrivateACIDR"
                },
                "pManagementCIDR": {
-		    "Fn::If" : [ "CreateVPCManagement", { "Ref" : "pManagementCIDR" },"false"]
+		    "Fn::If" : [ "cCreateVPCManagement", { "Ref" : "pManagementCIDR" }, "" ]
                },
                "pManagementPublicACIDR": {
-		    "Fn::If" : [ "CreateVPCManagement", { "Ref" : "pManagementPublicACIDR" },"false"]
+		    "Fn::If" : [ "cCreateVPCManagement", { "Ref" : "pManagementPublicACIDR" }, ""]
                },
                "pManagementPublicBCIDR": {
-		    "Fn::If" : [ "CreateVPCManagement", { "Ref" : "pManagementPublicBCIDR" },"false"]
+		    "Fn::If" : [ "cCreateManagementHA", { "Ref" : "pManagementPublicBCIDR" },""]
                },
                "pKeyName": {
                   "Ref": "pKeyName"
@@ -444,7 +453,7 @@
 		 "Fn::If" : [ "CreateBackupBucket", { "Ref" : "pBackupBucketName" },"false"]
                },
                "pVPCManagement": {
-			"Fn::If" : [ "CreateVPCManagement", { "Fn::GetAtt": ["stack2","Outputs.rVPCManagement" ] },"false"]
+			"Fn::If" : [ "cCreateVPCManagement", { "Fn::GetAtt": ["stack2","Outputs.rVPCManagement" ] },"false"]
                }
             }
          }
@@ -524,7 +533,7 @@
                },
 
                "pManagementPublicSubnetA": {
-		   "Fn::If" : [ "CreateVPCManagement", { "Fn::GetAtt": ["stack2","Outputs.rSubnetManagementPublicA" ] },"false"]
+		   "Fn::If" : [ "cCreateVPCManagement", { "Fn::GetAtt": ["stack2","Outputs.rSubnetManagementPublicA" ] },"false"]
                }
 		}
          }

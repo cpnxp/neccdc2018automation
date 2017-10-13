@@ -20,7 +20,7 @@
          "Default": "us-east-1a"
       },
       "pRegionAZ2Name": {
-         "Description": "Availability Zone 2 Name in Region",
+         "Description": "Availability Zone 2 Name in Region, 'none' if no HA",
          "Type": "String",
          "Default": "us-east-1b"
       },
@@ -91,9 +91,20 @@
       }
    },
    "Conditions" : {
+      "cCreateProductionHA" : {
+	 "Fn::Not" : [
+	    { "Fn::Equals": [{"Ref": "pProductionPublicBCIDR"}, "" ] }
+	 ]
+      },
+      "cCreateManagementHA" : {
+	 "Fn::And" : [
+	    { "Fn::Not" : [ { "Fn::Equals": [{"Ref": "pManagementCIDR"}, "" ] } ] },
+	    { "Fn::Not" : [ { "Fn::Equals": [{"Ref": "pManagementPublicBCIDR"}, "" ] } ] }
+	 ]
+      },
       "cCreateVPCManagement" : {
          "Fn::Not" : [
-            { "Fn::Equals": [{"Ref": "pManagementCIDR"},"false"] }
+	    { "Fn::Equals": [{"Ref": "pManagementCIDR"}, "" ] }
          ]
       }
    },
@@ -309,7 +320,7 @@
       "rSecurityGroupProductionNAT": {
          "Type": "AWS::EC2::SecurityGroup",
          "Properties": {
-            "GroupDescription": "Allow Nat from production",
+            "GroupDescription": "Allow NAT from production",
             "VpcId": {
                "Ref": "rVPCProduction"
             },
@@ -419,7 +430,7 @@
             "Tags": [ { "Key": "Name", "Value": "ManagementPublic Subnet A" } ] }
       },
       "rSubnetManagementPublicB": {
-	 "Condition" : "cCreateVPCManagement",
+	 "Condition" : "cCreateManagementHA",
          "Type": "AWS::EC2::Subnet",
          "Properties": {
 	    "CidrBlock": { "Ref": "pManagementPublicBCIDR" },
@@ -449,6 +460,7 @@
          }
       },
       "rSubnetProductionPublicB": {
+	 "Condition" : "cCreateProductionHA",
          "Type": "AWS::EC2::Subnet",
          "Properties": {
             "CidrBlock": {
@@ -489,6 +501,7 @@
          }
       },
       "rSubnetProductionPrivateB": {
+	 "Condition" : "cCreateProductionHA",
          "Type": "AWS::EC2::Subnet",
          "Properties": {
             "CidrBlock": {
@@ -509,6 +522,7 @@
          }
       },
       "rSubnetManagementPrivateA": {
+      	 "Condition" : "cCreateVPCManagement",
          "Type": "AWS::EC2::Subnet",
          "Properties": {
             "CidrBlock": {
@@ -529,6 +543,7 @@
          }
       },
       "rSubnetManagementPrivateB": {
+      	 "Condition" : "cCreateManagementHA",
          "Type": "AWS::EC2::Subnet",
          "Properties": {
             "CidrBlock": { "Ref": "pManagementPrivateBCIDR" },
@@ -584,6 +599,7 @@
 	 }
       },
       "rRouteTableProductionPrivateAZ2": {
+	 "Condition" : "cCreateProductionHA",
 	 "Type": "AWS::EC2::RouteTable",
 	 "Properties": {
 	    "VpcId": { "Ref": "rVPCProduction" },
@@ -605,7 +621,7 @@
 	    "Tags": [ { "Key": "Name", "Value": "Management Private AZ1" } ] }
       },
       "rRouteTableManagementPrivateAZ2": {
-	 "Condition" : "cCreateVPCManagement",
+	 "Condition" : "cCreateManagementHA",
          "Type": "AWS::EC2::RouteTable",
          "Properties": {
             "VpcId": { "Ref": "rVPCManagement" },
@@ -640,7 +656,7 @@
 	 }
       },
       "rRouteManagementPrivateAZ2ToProduction": {
-	 "Condition" : "cCreateVPCManagement",
+	 "Condition" : "cCreateManagementHA",
 	 "Type": "AWS::EC2::Route",
 	 "Properties": {
 	    "RouteTableId": { "Ref": "rRouteTableManagementPrivateAZ2" },
@@ -653,6 +669,7 @@
 	 "Properties": { "Domain": "vpc" }
       },
       "rEIPProdNATB": {
+	 "Condition" : "cCreateProductionHA",
          "Type": "AWS::EC2::EIP",
          "Properties": { "Domain": "vpc" }
       },
@@ -662,12 +679,11 @@
          "Properties": { "Domain": "vpc" }
       },
       "rEIPManagementNATB": {
-	"Condition" : "cCreateVPCManagement",
+	"Condition" : "cCreateManagementHA",
 	 "Type": "AWS::EC2::EIP",
 	 "Properties": { "Domain": "vpc" }
       },
       "rProductionNATGatewayAZ1": {
-	 "Condition" : "cCreateVPCManagement",
          "Type": "AWS::EC2::NatGateway",
          "Properties": {
             "Tags": [ { "Key": "Name", "Value": "Production VPC NAT GatewayA" } ],
@@ -676,7 +692,7 @@
          }
       },
       "rProductionNATGatewayAZ2": {
-	 "Condition" : "cCreateVPCManagement",
+	 "Condition" : "cCreateProductionHA",
 	 "Type": "AWS::EC2::NatGateway",
 	 "Properties": {
 	    "Tags": [ { "Key": "Name", "Value": "Production VPC NAT GatewayB" } ],
@@ -694,7 +710,7 @@
 	 }
       },
       "rManagementNATGatewayAZ2": {
-	 "Condition" : "cCreateVPCManagement",
+	 "Condition" : "cCreateManagementHA",
 	 "Type": "AWS::EC2::NatGateway",
 	 "Properties": {
 	    "Tags": [ { "Key": "Name", "Value": "Management VPC NAT GatewayB" } ],
@@ -730,6 +746,7 @@
 	 }
       },
       "rRouteProductionPrivateAZ2ToNAT": {
+	 "Condition" : "cCreateProductionHA",
          "Type": "AWS::EC2::Route",
          "Properties": {
             "DestinationCidrBlock": "0.0.0.0/0",
@@ -738,6 +755,7 @@
          }
       },
       "rRouteManagementPrivateAZ1ToNAT": {
+	 "Condition" : "cCreateVPCManagement",
 	 "Type": "AWS::EC2::Route",
 	 "Properties": {
 	    "DestinationCidrBlock": "0.0.0.0/0",
@@ -746,6 +764,7 @@
 	 }
       },
       "rRouteManagementPrivateAZ2ToNAT": {
+	 "Condition" : "cCreateManagementHA",
 	 "Type": "AWS::EC2::Route",
 	 "Properties": {
 	    "DestinationCidrBlock": "0.0.0.0/0",
@@ -763,7 +782,7 @@
          }
       },
       "rRoutePeeringProductionPrivateAZ2toManagement": {
-	 "Condition" : "cCreateVPCManagement",
+	 "Condition" : "cCreateProductionHA",
 	 "Type": "AWS::EC2::Route",
 	 "Properties": {
 	    "DestinationCidrBlock": { "Ref": "pManagementCIDR" },
@@ -772,6 +791,7 @@
 	 }
       },
       "rRouteAssocManagementPublicA": {
+	 "Condition" : "cCreateVPCManagement",
 	 "Type": "AWS::EC2::SubnetRouteTableAssociation",
 	 "Properties": {
 	    "RouteTableId": { "Ref": "rRouteTableManagementPublic" },
@@ -779,6 +799,7 @@
 	 }
       },
       "rRouteAssocManagementPublicB": {
+	 "Condition" : "cCreateManagementHA",
 	 "Type": "AWS::EC2::SubnetRouteTableAssociation",
 	 "Properties": {
 	    "RouteTableId": { "Ref": "rRouteTableManagementPublic" },
@@ -786,6 +807,7 @@
 	 }
       },
       "rRouteAssocManagementPrivateA": {
+	 "Condition" : "cCreateVPCManagement",
 	 "Type": "AWS::EC2::SubnetRouteTableAssociation",
 	 "Properties": {
 	    "RouteTableId": { "Ref": "rRouteTableManagementPrivateAZ1" },
@@ -793,6 +815,7 @@
 	 }
       },
       "rRouteAssocManagementPrivateB": {
+	 "Condition" : "cCreateManagementHA",
 	 "Type": "AWS::EC2::SubnetRouteTableAssociation",
 	 "Properties": {
 	    "RouteTableId": { "Ref": "rRouteTableManagementPrivateAZ2" },
@@ -807,6 +830,7 @@
          }
       },
       "rRouteAssocProdPublicB": {
+	 "Condition" : "cCreateProductionHA",
          "Type": "AWS::EC2::SubnetRouteTableAssociation",
          "Properties": {
             "RouteTableId": { "Ref": "rRouteTableProductionPublic" },
@@ -821,6 +845,7 @@
          }
       },
       "rSubnetProductionPrivateAssociationB": {
+	 "Condition" : "cCreateProductionHA",
          "Type": "AWS::EC2::SubnetRouteTableAssociation",
          "Properties": {
             "RouteTableId": { "Ref": "rRouteTableProductionPrivateAZ2" },
@@ -859,7 +884,7 @@
                "Ref": "rNACLProduction"
             },
             "SubnetId": {
-               "Ref": "rSubnetProductionPrivateB"
+               "Ref": "rSubnetProductionPrivateA"
             }
          }
       },
@@ -875,6 +900,7 @@
          }
       },
       "rNACLAssocProdPublicB": {
+	 "Condition" : "cCreateProductionHA",
          "Type": "AWS::EC2::SubnetNetworkAclAssociation",
          "Properties": {
             "NetworkAclId": {
@@ -948,7 +974,7 @@
       },
       "rSubnetManagementPublicB": {
          "Value": {
-	    "Fn::If" : [ "cCreateVPCManagement", { "Ref" : "rSubnetManagementPublicB" },"N/A"]
+	    "Fn::If" : [ "cCreateManagementHA", { "Ref" : "rSubnetManagementPublicB" },"N/A"]
          }
       },
       "rSubnetProductionPublicA": {
@@ -958,7 +984,7 @@
       },
       "rSubnetProductionPublicB": {
          "Value": {
-            "Ref": "rSubnetProductionPublicB"
+	    "Fn::If" : [ "cCreateProductionHA", { "Ref" : "rSubnetProductionPublicB" },"N/A"]
          }
       },
       "rSubnetProductionPrivateA": {
@@ -968,12 +994,12 @@
       },
       "rSubnetProductionPrivateB": {
          "Value": {
-            "Ref": "rSubnetProductionPrivateB"
+	    "Fn::If" : [ "cCreateProductionHA", { "Ref" : "rSubnetProductionPrivateB" },"N/A"]
          }
       },
       "rSubnetManagementPrivateA": {
          "Value": {
-            "Ref": "rSubnetManagementPrivateA"
+	    "Fn::If" : [ "cCreateVPCManagement", { "Ref" : "rSubnetManagementPrivateA" },"N/A"]
          }
       },
       "rSecurityGroupSSHFromProd": {
@@ -983,7 +1009,7 @@
       },
       "rSubnetManagementPrivateB": {
          "Value": {
-            "Ref": "rSubnetManagementPrivateB"
+	    "Fn::If" : [ "cCreateManagementHA", { "Ref" : "rSubnetManagementPrivateB" },"N/A"]
          }
       }
    }
