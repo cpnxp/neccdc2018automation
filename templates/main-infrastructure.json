@@ -35,88 +35,11 @@
          "Type": "String",
          "Default": "t2.micro",
          "AllowedValues": [
-            "t1.micro",
             "t2.micro",
-            "t2.small",
-            "t2.medium",
-            "m1.small",
-            "m1.medium",
-            "m1.large",
-            "m1.xlarge",
-            "m2.xlarge",
-            "m2.2xlarge",
-            "m2.4xlarge",
-            "m3.medium",
-            "m3.large",
-            "m3.xlarge",
-            "m3.2xlarge",
-            "c1.medium",
-            "c1.xlarge",
-            "c3.large",
-            "c3.xlarge",
-            "c3.2xlarge",
-            "c3.4xlarge",
-            "c3.8xlarge",
-            "g2.2xlarge",
-            "r3.large",
-            "r3.xlarge",
-            "r3.2xlarge",
-            "r3.4xlarge",
-            "r3.8xlarge",
-            "i2.xlarge",
-            "i2.2xlarge",
-            "i2.4xlarge",
-            "i2.8xlarge",
-            "hi1.4xlarge",
-            "hs1.8xlarge",
-            "cr1.8xlarge",
-            "cc2.8xlarge",
-            "cg1.4xlarge"
-         ],
-         "ConstraintDescription": "must be a valid EC2 instance type, existing in the mapping."
-      },
-      "pAppInstanceType": {
-         "Description": "Application Server EC2 instance type",
-         "Type": "String",
-         "Default": "m3.large",
-         "AllowedValues": [
-            "t1.micro",
-            "t2.micro",
-            "t2.small",
-            "t2.medium",
-            "m1.small",
-            "m1.medium",
-            "m1.large",
-            "m1.xlarge",
-            "m2.xlarge",
-            "m2.2xlarge",
-            "m2.4xlarge",
-            "m3.medium",
-            "m3.large",
-            "m3.xlarge",
-            "m3.2xlarge",
-            "c1.medium",
-            "c1.xlarge",
-            "c3.large",
-            "c3.xlarge",
-            "c3.2xlarge",
-            "c3.4xlarge",
-            "c3.8xlarge",
-            "g2.2xlarge",
-            "r3.large",
-            "r3.xlarge",
-            "r3.2xlarge",
-            "r3.4xlarge",
-            "r3.8xlarge",
-            "i2.xlarge",
-            "i2.2xlarge",
-            "i2.4xlarge",
-            "i2.8xlarge",
-            "hi1.4xlarge",
-            "hs1.8xlarge",
-            "cr1.8xlarge",
-            "cc2.8xlarge",
-            "cg1.4xlarge"
+            "m4.2xlarge",
+            "m4.2xlarge",
+            "c4.2xlarge",
+            "c4.4xlarge"
          ],
          "ConstraintDescription": "must be a valid EC2 instance type, existing in the mapping."
       },
@@ -125,97 +48,38 @@
          "Type": "String",
          "Default": "us-east-1.compute.internal"
       },
-      "pRegionAZ1Name": {
-         "Description": "Availability Zone 1 Name in Region",
+      "pRegionAZName": {
+         "Description": "Availability Zone Name in Region",
          "Type": "AWS::EC2::AvailabilityZone::Name",
 	 "Default": "us-east-1a"
       },
-      "pRegionAZ2Name": {
-         "Description": "Availability Zone 2 Name in Region",
-         "Type": "AWS::EC2::AvailabilityZone::Name",
-	 "Default": "us-east-1b"
-      },
-      "pProductionVPCName": {
-         "Description": "Production VPC Name",
+      "pVPCName": {
+         "Description": "Blue team VPC name",
          "Type": "String",
-         "Default": "Production"
+         "Default": "BlueTeamVPC"
       },
-      "pHAnetwork": {
-	 "Description": "True if we want to build multiple AZs",
-	 "Type": "String",
-	 "Default": "false"
-      },
-      "pProductionCIDR": {
-         "Description": "CIDR block for Production VPC",
+      "pVpcCIDR": {
+         "Description": "CIDR block for Blue Team VPC",
          "Type": "String",
-         "Default": "10.100.0.0/16",
+         "Default": "10.0.0.0/16",
          "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
          "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
       },
-      "pProductionPublicACIDR": {
-         "Description": "CIDR block for ProductionPublic AZ-1b subnet",
+      "pPublicCIDR": {
+         "Description": "CIDR block for Public subnet",
          "Type": "String",
-         "Default": "10.100.1.0/24",
+         "Default": "10.0.0.0/24",
          "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
          "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
       },
-      "pProductionPublicBCIDR": {
-         "Description": "CIDR block for ProductionPublic AZ-1b subnet",
+      "pPrivateCIDR": {
+         "Description": "CIDR block for Private subnet",
          "Type": "String",
-         "Default": "10.100.2.0/24",
-         "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-         "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
-      },
-      "pProductionPrivateSubnetACIDR": {
-         "Description": "CIDR block for Public AZ-1a subnet",
-         "Type": "String",
-         "Default": "10.100.11.0/24",
-         "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-         "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
-      },
-      "pProductionPrivateSubnetBCIDR": {
-         "Description": "CIDR block for Public AZ-1b subnet",
-         "Type": "String",
-         "Default": "10.100.12.0/24",
+         "Default": "10.0.1.0/24",
          "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
          "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
       },
 
-      "pManagementCIDR": {
-         "Description": "CIDR block for Management VPC",
-         "Type": "String",
-         "Default": "10.10.0.0/16",
-	 "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-         "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
-      },
-      "pManagementPublicACIDR": {
-         "Description": "CIDR block for Management AZ-1a subnet",
-         "Type": "String",
-         "Default": "10.10.1.0/24",
-         "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-         "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
-      },
-      "pManagementPublicBCIDR": {
-         "Description": "CIDR block for Management AZ-1b subnet",
-         "Type": "String",
-         "Default": "10.10.2.0/24",
-         "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-         "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
-      },
-      "pManagementPrivateACIDR": {
-	 "Description": "CIDR block for Private AZ-1a subnet",
-	 "Type": "String",
-	 "Default": "10.10.11.0/24",
-	 "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-	 "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
-      },
-      "pManagementPrivateBCIDR": {
-	 "Description": "CIDR block for Private AZ-1b subnet",
-	 "Type": "String",
-	 "Default": "10.10.12.0/24",
-	 "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-	 "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
-      },
       "pWebContentBucketName": {
          "Description": "Name of S3 Bucket to use for web content (optional)",
          "Type": "String",
@@ -249,7 +113,7 @@
       "stack4URL": {
          "Description": "Valid S3 URL of location where Stack4 template exists",
          "Type": "String",
-	 "Default" : "https://s3.amazonaws.com/neccdc2018/stack4-application.json"
+	 "Default" : "https://s3.amazonaws.com/neccdc2018/stack4-firewall.json"
       },
       "pWebServerAMI": {
          "Description": "Which webserver AMI do you want to use, default ",
@@ -260,60 +124,9 @@
          "Description": "Which App AMI do you want to use?",
          "Type": "String",
 	 "Default" : "ami-60b6c60a"
-      },
-
-      "pCreateProductionHA" : {
-	 "Description" : "Create multiple availibility zones for production? (yes/no)",
-	"Type" : "String",
-	"Default" : "no"
-      },
-
-      "pCreateManagementHA" : {
-	 "Description" : "Create multiple availibility zones for management? (yes/no)",
-	"Type" : "String",
-	"Default" : "no"
-      },
-
-      "pCreateVPCManagement" : {
-	 "Description" : "Create Management VPC? (yes/no)",
-	"Type" : "String",
-	"Default" : "no"
       }
-
    },
    "Conditions": {
-      "cCreateVPCManagement" : {
-	 "Fn::Or" : [
-            { "Fn::Equals": [{"Ref": "pCreateVPCManagement"},"yes"]},
-	    { "Fn::Equals": [{"Ref": "pCreateVPCManagement"},"YES"]},
-            { "Fn::Equals": [{"Ref": "pCreateVPCManagement"},"true"]},
-	    { "Fn::Equals": [{"Ref": "pCreateVPCManagement"},"True"]}
-         ]
-      },
-      "cCreateProductionHA" : {
-	 "Fn::Or" : [
-	    { "Fn::Equals": [{"Ref": "pCreateProductionHA"},"yes"]}, 
-	    { "Fn::Equals": [{"Ref": "pCreateProductionHA"},"YES"]},
-	    { "Fn::Equals": [{"Ref": "pCreateProductionHA"},"true"]}, 
-	    { "Fn::Equals": [{"Ref": "pCreateProductionHA"},"True"]}
-	 ]
-      },
-      "cCreateManagementHA" : {
-	 "Fn::And" : [
-	    { "Fn::Or" : [
-	       { "Fn::Equals": [{"Ref": "pCreateManagementHA"},"yes"]},
-	       { "Fn::Equals": [{"Ref": "pCreateManagementHA"},"YES"]},
-	       { "Fn::Equals": [{"Ref": "pCreateManagementHA"},"true"]},
-	       { "Fn::Equals": [{"Ref": "pCreateManagementHA"},"True"]} ]
-	    },
-    	    { "Fn::Or" : [
-	       { "Fn::Equals": [{"Ref": "pCreateVPCManagement"},"yes"]},
-	       { "Fn::Equals": [{"Ref": "pCreateVPCManagement"},"YES"]},
-	       { "Fn::Equals": [{"Ref": "pCreateVPCManagement"},"true"]},
-	       { "Fn::Equals": [{"Ref": "pCreateVPCManagement"},"True"]} ]
-	    }
-	 ]
-      },
       "CreateWebAppBucket" : {
 	 "Fn::Not" : [  {"Fn::Equals" : [ { "Ref" : "pWebContentBucketName" }, "none"] } ]
       },
@@ -362,55 +175,29 @@
          "Type": "AWS::CloudFormation::Stack",
          "Condition": "CreateStack2",
          "Properties": {
-            "TemplateURL": {
-               "Ref": "stack2URL"
-            },
+            "TemplateURL": { "Ref": "stack2URL" },
             "TimeoutInMinutes": "20",
             "Parameters": {
                "pRegionDomain": {
                   "Ref": "pRegionDomain"
                },
-               "pRegionAZ1Name": {
-                  "Ref": "pRegionAZ1Name"
+               "pRegionAZName": {
+                  "Ref": "pRegionAZName"
                },
-               "pRegionAZ2Name": {
-                  "Ref": "pRegionAZ2Name"
+               "pVPCName": {
+                  "Ref": "pVPCName"
                },
-               "pProductionVPCName": {
-                  "Ref": "pProductionVPCName"
+               "pVpcCIDR": {
+                  "Ref": "pVpcCIDR"
                },
-               "pProductionCIDR": {
-                  "Ref": "pProductionCIDR"
+               "pPublicCIDR": {
+		  "Ref": "pPublicCIDR"
                },
-               "pProductionPublicACIDR": {
-		  "Ref": "pProductionPublicACIDR"
-               },
-               "pProductionPublicBCIDR": {
-		    "Fn::If" : [ "cCreateProductionHA", { "Ref" : "pProductionPublicBCIDR" }, "" ]
-               },
-               "pProductionPrivateSubnetACIDR": {
-                  "Ref": "pProductionPrivateSubnetACIDR"
-               },
-               "pProductionPrivateSubnetBCIDR": {
-                  "Ref": "pProductionPrivateSubnetBCIDR"
-               },
-               "pManagementPrivateACIDR": {
-                  "Ref": "pManagementPrivateACIDR"
-               },
-               "pManagementCIDR": {
-		    "Fn::If" : [ "cCreateVPCManagement", { "Ref" : "pManagementCIDR" }, "" ]
-               },
-               "pManagementPublicACIDR": {
-		    "Fn::If" : [ "cCreateVPCManagement", { "Ref" : "pManagementPublicACIDR" }, ""]
-               },
-               "pManagementPublicBCIDR": {
-		    "Fn::If" : [ "cCreateManagementHA", { "Ref" : "pManagementPublicBCIDR" },""]
+               "pPrivateCIDR": {
+                  "Ref": "pPrivateCIDR"
                },
                "pKeyName": {
                   "Ref": "pKeyName"
-               },
-               "pManagementPrivateBCIDR": {
-                  "Ref": "pManagementPrivateBCIDR"
                }
             }
          }
@@ -425,23 +212,17 @@
             },
             "TimeoutInMinutes": "20",
             "Parameters": {
-               "pProductionVPC": {
-                  "Fn::GetAtt" : [ "stack2", "Outputs.rVPCProduction" ]
+               "pBlueTeamVPC": {
+                  "Fn::GetAtt" : [ "stack2", "Outputs.rBlueTeamVPC" ]
                },
-               "pProductionCIDR": {
-                  "Ref": "pProductionCIDR"
+               "pVpcCIDR": {
+                  "Ref": "pVpcCIDR"
                },
-               "pProductionPublicSubnetA": {
-			"Fn::GetAtt" : [ "stack2", "Outputs.rSubnetProductionPublicA" ]
+               "pPublicSubnet": {
+			"Fn::GetAtt" : [ "stack2", "Outputs.rPublicSubnet" ]
                },
-               "pProductionPublicSubnetB": {
-			"Fn::GetAtt" : [ "stack2", "Outputs.rSubnetProductionPublicB" ]
-               },
-               "pProductionPrivateSubnetA": {
-			"Fn::GetAtt" : [ "stack2", "Outputs.rSubnetProductionPrivateA" ]
-               },
-               "pProductionPrivateSubnetB": {
-			"Fn::GetAtt" : [ "stack2", "Outputs.rSubnetProductionPrivateB" ]
+               "pPrivateSubnet": {
+			"Fn::GetAtt" : [ "stack2", "Outputs.rPrivateSubnet" ]
                },
                "pS3WebContentBucketName" : {
 		"Fn::If" : [ "CreateWebAppBucket", { "Ref" : "pWebContentBucketName" },"false"]
@@ -451,9 +232,6 @@
                },
                "pS3BackupBucketName": {
 		 "Fn::If" : [ "CreateBackupBucket", { "Ref" : "pBackupBucketName" },"false"]
-               },
-               "pVPCManagement": {
-			"Fn::If" : [ "cCreateVPCManagement", { "Fn::GetAtt": ["stack2","Outputs.rVPCManagement" ] },"false"]
                }
             }
          }
@@ -468,44 +246,41 @@
             },
             "TimeoutInMinutes": "30",
             "Parameters": {
-               "pProductionVPC": {
-		 "Fn::GetAtt" : [ "stack2", "Outputs.rVPCProduction" ]
+               "pBlueTeamVPC": {
+		 "Fn::GetAtt" : [ "stack2", "Outputs.rBlueTeamVPC" ]
                },
-               "pProductionCIDR": {
-                  "Ref": "pProductionCIDR"
+               "pVpcCIDR": {
+                  "Ref": "pVpcCIDR"
                },
-               "pProductionPublicSubnetA": {
-		 "Fn::GetAtt" : [ "stack2", "Outputs.rSubnetProductionPublicA" ]
+	       "pBlueTeamIGW": {
+		 "Fn::GetAtt" : [ "stack2", "Outputs.rBlueTeamIGW" ]
+	       },
+	       "pDHCPoptions": {
+		 "Fn::GetAtt" : [ "stack2", "Outputs.rDHCPoptions" ]
+	       },
+	       "pNACLBlueTeam": {
+		 "Fn::GetAtt" : [ "stack2", "Outputs.rNACLBlueTeam" ]
+	       },
+               "pRouteTablePublic": {
+		 "Fn::GetAtt" : [ "stack2", "Outputs.rRouteTablePublic" ]
                },
-               "pProductionPublicSubnetB": {
-		 "Fn::GetAtt" : [ "stack2", "Outputs.rSubnetProductionPublicB" ]
-               },
-               "pManagementPrivateSubnetA": {
-		 "Fn::GetAtt" : [ "stack2", "Outputs.rSubnetManagementPrivateA" ]
-               },
-               "pManagementPrivateSubnetB": {
-		 "Fn::GetAtt" : [ "stack2", "Outputs.rSubnetManagementPrivateB" ]
-               },
-               "pProductionPrivateSubnetA": {
-		 "Fn::GetAtt" : [ "stack2", "Outputs.rSubnetProductionPrivateA" ]
-               },
-               "pProductionPrivateSubnetB": {
-		 "Fn::GetAtt" : [ "stack2", "Outputs.rSubnetProductionPrivateB" ]
+	       "pRouteTablePrivate": {
+		 "Fn::GetAtt" : [ "stack2", "Outputs.rRouteTablePrivate" ]
+	       },
+	       "pPublicSubnet": {
+		 "Fn::GetAtt" : [ "stack2", "Outputs.rPublicSubnet" ]
+	       },
+               "pPrivateSubnet": {
+		 "Fn::GetAtt" : [ "stack2", "Outputs.rPrivateSubnet" ]
                },
                "pKeyName": {
                   "Ref": "pKeyName"
                },
-               "pRegionAZ1Name": {
-                  "Ref": "pRegionAZ1Name"
-               },
-               "pRegionAZ2Name": {
-                  "Ref": "pRegionAZ2Name"
+               "pRegionAZName": {
+                  "Ref": "pRegionAZName"
                },
                "pInstanceType": {
                   "Ref": "pInstanceType"
-               },
-               "pAppInstanceType": {
-                  "Ref": "pAppInstanceType"
                },
                "pSecurityGroupWeb": {
                   "Fn::GetAtt": [
@@ -519,10 +294,10 @@
                      "Outputs.rSecurityGroupApp"
                   ]
                },
-               "pSecurityGroupMgmtBastionHost": {
+               "pSecurityGroupBastionHost": {
                   "Fn::GetAtt": [
                      "stack3",
-                     "Outputs.rSecurityGroupMgmtBastionHost"
+                     "Outputs.rSecurityGroupBastionHost"
                   ]
                },
                "pWebServerAMI": {
@@ -530,16 +305,21 @@
                },
                "pAppAmi": {
                   "Ref": "pAppAmi"
-               },
-
-               "pManagementPublicSubnetA": {
-		   "Fn::If" : [ "cCreateVPCManagement", { "Fn::GetAtt": ["stack2","Outputs.rSubnetManagementPublicA" ] },"false"]
                }
-		}
+            }
          }
       }
    },
    "Outputs": {
+      "FirewallManagementEIP": {
+	"Value" : { "Fn::GetAtt" : [ "stack4", "Outputs.FirewallManagementEIP" ] }
+      },
+      "rFwPublicIP": {
+	"Value" : { "Fn::GetAtt" : [ "stack4", "Outputs.rFwPublicIP" ] }
+      },
+      "rFwPrivateIP": {
+	"Value" : { "Fn::GetAtt" : [ "stack4", "Outputs.rFwPrivateIP" ] }
+      },
       "TemplateType": {
          "Value": "Standard Multi-Tier Web Application"
       },

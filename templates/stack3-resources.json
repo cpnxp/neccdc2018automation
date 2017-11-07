@@ -9,28 +9,20 @@
         "Output" : { "Description" : "Outputs ID of all deployed resources" }
     },
    "Parameters": {
-      "pProductionCIDR": {
-         "Description": "Production VPC CIDR",
+      "pVpcCIDR": {
+         "Description": "CIDR block for Blue Team VPC",
          "Type": "String"
       },
-      "pProductionVPC": {
-         "Description": "Production VPC",
+      "pBlueTeamVPC": {
+         "Description": "Blue Team VPC",
          "Type": "String"
       },
-      "pProductionPublicSubnetA": {
-         "Description": "ProductionPublic Subnet A",
+      "pPublicSubnet": {
+         "Description": "Public Subnet",
          "Type": "String"
       },
-      "pProductionPublicSubnetB": {
-         "Description": "ProductionPublic Subnet B",
-         "Type": "String"
-      },
-      "pProductionPrivateSubnetA" : {
-         "Description": "ProductionPrivate Subnet A",
-         "Type": "String"
-      },
-      "pProductionPrivateSubnetB" : {
-         "Description": "ProductionPrivate Subnet B",
+      "pPrivateSubnet" : {
+         "Description": "Private Subnet",
          "Type": "String"
       },
       "pS3WebContentBucketName": {
@@ -44,19 +36,9 @@
       "pS3BackupBucketName": {
          "Description": "Name of S3 Bucket to use for backup/DR data (optional)",
          "Type": "String"
-      },
-      "pVPCManagement": {
-         "Description": "Management VPC",
-         "Type": "String",
-	 "Default" : "none"
       }
    },
    "Conditions" : {
-      "cCreateVPCManagement" : {
-         "Fn::Not" : [
-            { "Fn::Equals": [{"Ref": "pVPCManagement"},"false"] }
-         ]
-      },
         "cCreateAppLogsBucket" : {
 		"Fn::Not" : [ {
                 "Fn::Equals" : [ { "Ref" : "pS3AppLogsBucketName" }, "false"]
@@ -78,9 +60,9 @@
       "rSecurityGroupWeb": {
          "Type": "AWS::EC2::SecurityGroup",
          "Properties": {
-            "GroupDescription": "Security group for Reverse Proxy in ProductionPublic",
+            "GroupDescription": "Security group for Reverse Proxy in Public subnet",
             "VpcId": {
-               "Ref": "pProductionVPC"
+               "Ref": "pBlueTeamVPC"
             },
             "SecurityGroupIngress": [
                {
@@ -110,43 +92,38 @@
             ]
          }
       },
-      "rSecurityGroupMgmtBastionHost": {
-	 "Condition" : "cCreateVPCManagement",
-         "Type": "AWS::EC2::SecurityGroup",
-         "Properties": {
-            "GroupDescription": "Security group for Bastion Host in ProductionPublic",
-            "VpcId": {
-               "Ref": "pVPCManagement"
-            },
-            "SecurityGroupIngress": [
-               {
-                  "IpProtocol": "tcp",
-                  "FromPort": "22",
-                  "ToPort": "22",
-                  "CidrIp": "0.0.0.0/0"
-               },
-               {
-                  "IpProtocol": "tcp",
-                  "FromPort": "3389",
-                  "ToPort": "3389",
-                  "CidrIp": "0.0.0.0/0"
-               }
-            ],
-            "SecurityGroupEgress": [
-               {
-                  "IpProtocol": "-1",
-                  "CidrIp": "0.0.0.0/0"
-               }
-            ]
-         }
+      "rSecurityGroupBastionHost": {
+	 "Type": "AWS::EC2::SecurityGroup",
+	 "Properties": {
+	    "GroupDescription": "Security group for Bastion Host in Public subnet",
+	    "VpcId": { "Ref": "pBlueTeamVPC" },
+	    "SecurityGroupIngress": [
+	       {
+		  "IpProtocol": "tcp",
+		  "FromPort": "22",
+		  "ToPort": "22",
+		  "CidrIp": "0.0.0.0/0"
+	       },
+	       {
+		  "IpProtocol": "tcp",
+		  "FromPort": "3389",
+		  "ToPort": "3389",
+		  "CidrIp": "0.0.0.0/0"
+	       }
+	    ],
+	    "SecurityGroupEgress": [
+	       {
+		  "IpProtocol": "-1",
+		  "CidrIp": "0.0.0.0/0"
+	       }
+	    ]
+	 }
       },
       "rSecurityGroupApp": {
          "Type": "AWS::EC2::SecurityGroup",
          "Properties": {
             "GroupDescription": "Security group for Appservers",
-            "VpcId": {
-               "Ref": "pProductionVPC"
-            },
+            "VpcId": { "Ref": "pBlueTeamVPC" },
             "SecurityGroupIngress": [
                {
                   "IpProtocol": "tcp",
@@ -316,9 +293,9 @@
             "Ref": "rSecurityGroupWeb"
          }
       },
-      "rSecurityGroupMgmtBastionHost": {
+      "rSecurityGroupBastionHost": {
          "Value": {
-		 "Fn::If" : [ "cCreateVPCManagement", { "Ref" : "rSecurityGroupMgmtBastionHost" },"N/A"]
+	    "Ref" : "rSecurityGroupBastionHost"
          }
       },
       "rSecurityGroupApp": {

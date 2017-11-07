@@ -1,0 +1,370 @@
+{
+   "AWSTemplateFormatVersion": "2010-09-09",
+   "Description": "Install PANW VM-Series Firewall (Version 8.0.0) with BYOL in front of NGINX server",
+   "Metadata" : {
+      "Stack" : {"Value" : "4"},
+      "VersionDate" : { "Value" : "09302017" },
+      "Identifier" : { "Value" : "stack4-application" },
+      "Input" : { "Description" : "VPC, SubnetIDs, S3 bucket names, CIDR blocks, KeyNames, AMIs, DB name and password" },
+      "Output" : { "Description" : "Outputs ID of all deployed resources" }
+   },
+   "Parameters": {
+      "pKeyName": {
+         "Description": "Name of an existing EC2 KeyPair to enable SSH access to the server and VM-Series (Hint: You MUST have its private key)",
+         "Type": "AWS::EC2::KeyPair::KeyName",
+         "Default": "NECCDC"
+      },
+      "pVpcCIDR": {
+         "Description": "CIDR block for Blue Team VPC",
+         "Type": "String"
+      },
+      "pBlueTeamVPC": {
+         "Description": "Blue Team VPC",
+         "Type": "String"
+      },
+      "pBlueTeamIGW": {
+	 "Description": "Blue Team Internet Gateway",
+	 "Type": "String"
+      },
+      "pDHCPoptions": {
+	 "Description": "Blue Team DCHP Options",
+	 "Type": "String"
+      },
+      "pNACLBlueTeam": {
+	 "Description": "Network ACL",
+	 "Type": "String"
+      },
+      "pRouteTablePublic": {
+	 "Description": "Public Subnet Route Table",
+	 "Type": "String"
+      },
+      "pRouteTablePrivate": {
+	 "Description": "Private Subnet Route Table",
+	 "Type": "String"
+      },
+      "pPublicSubnet": {
+         "Description": "Public Subnet",
+         "Type": "String"
+      },
+      "pPrivateSubnet": {
+         "Description": "Private Subnet",
+         "Type": "String"
+      },
+      "pInstanceType": {
+         "Description": "Instance type for the webservers",
+         "Type": "String"
+      },
+      "pSecurityGroupWeb": {
+         "Description": "SG for Webserver",
+         "Type": "String"
+      },
+      "pSecurityGroupApp": {
+         "Description": "SG for Private subnet",
+         "Type": "String"
+      },
+      "pSecurityGroupBastionHost": {
+         "Description": "SG for Bastion",
+         "Type": "String"
+      },
+      "pRegionAZName": {
+         "Description": "Availability Zone Name in Region",
+         "Type": "String"
+      },
+      "pWebServerAMI": {
+         "Description": "Which webserver AMI do you want to use, default ",
+         "Type": "String",
+	 "Default" : "none"
+      },
+      "pAppAmi": {
+         "Description": "Which App AMI do you want to use?",
+         "Type": "String",
+	 "Default" : "ami-60b6c60a"
+      }
+   },
+   "Mappings": {
+      "PANFWRegionMap" : { "us-east-1" : { "AMI": "ami-34ca984f" } },
+      "AZRegionMap" : { "us-east-1" : { "RegionAZ": "us-east-1a" } },
+      "UbuntuRegionMap" : { "us-east-1" : { "AMI": "ami-cd0f5cb6" } }
+   },
+   
+   "Resources": {
+      "rEIPrBastionHostInstance": {
+         "Type": "AWS::EC2::EIP",
+         "Properties": { "Domain": "vpc" }
+      },
+      "rEIPAssociationBastion": {
+         "Type": "AWS::EC2::EIPAssociation",
+         "Properties": {
+            "AllocationId": {
+               "Fn::GetAtt": [
+                  "rEIPrBastionHostInstance",
+                  "AllocationId"
+               ]
+            },
+            "NetworkInterfaceId": {
+               "Ref": "rENIBastionHost"
+            }
+         }
+      },
+      "rENIBastionHost": {
+         "Type": "AWS::EC2::NetworkInterface",
+         "Properties": {
+            "SubnetId": { "Ref": "pPublicSubnet" },
+            "Description": "Interface for control traffic such as SSH",
+            "GroupSet": [
+               {
+                  "Ref": "pSecurityGroupBastionHost"
+               }
+            ],
+            "SourceDestCheck": "true",
+            "Tags": [
+               {
+                  "Key": "Network",
+                  "Value": "BastionControl"
+               }
+            ]
+         }
+      },
+      "rBastionHostInstance": {
+         "Type": "AWS::EC2::Instance",
+         "Properties": {
+	    "ImageId": { "Ref": "pAppAmi" },
+            "InstanceType": { "Ref": "pInstanceType" },
+            "KeyName": { "Ref": "pKeyName" },
+            "Tags": [
+               {
+                  "Key": "Name",
+                  "Value": "Management Jump Server"
+               }
+            ],
+
+            "NetworkInterfaces": [
+               {
+                  "NetworkInterfaceId": {
+                     "Ref": "rENIBastionHost"
+                  },
+                  "DeviceIndex": "0"
+               }
+            ]
+         }
+      },
+
+      "rFwPublicIP": {
+	"Type" : "AWS::EC2::EIP",
+	"Properties" : { "Domain" : "vpc" }
+      },
+  
+      "rFwManagementIP": {
+	"Type" : "AWS::EC2::EIP",
+	"Properties" : { "Domain" : "vpc" }
+      },
+  
+      "rFwPrivateIP": {
+	"Type" : "AWS::EC2::EIP",
+	"Properties" : { "Domain" : "vpc" }
+      },
+  
+      "rFWManagementNetworkInterface": {
+	"Type": "AWS::EC2::NetworkInterface",
+	"Properties": {
+	  "Description": "AWS FW1 MGMT",
+	  "SubnetId": {"Ref": "pPublicSubnet"},
+	  "SourceDestCheck": "false",
+	  "PrivateIpAddresses": [
+	    {
+	      "PrivateIpAddress": "10.0.0.99",
+	      "Primary": "true"
+	    }
+	    ],
+	  "GroupSet": [{"Ref": "rSecurityGroupWideOpen"}],
+	  "Tags": [{"Key": "Name","Value": "FW Eth0"}]
+	},
+	"DependsOn": [ "rSecurityGroupWideOpen" ]
+      },
+  
+      "rFWPublicNetworkInterface": {
+	"Type": "AWS::EC2::NetworkInterface",
+	"Properties": {
+	  "Description": "AWS FW1 E1/1",
+	  "SubnetId": {"Ref": "pPublicSubnet"},
+	  "SourceDestCheck": "false",
+	  "PrivateIpAddresses": [
+	    {
+	      "PrivateIpAddress": "10.0.0.100",
+	      "Primary": "true"
+	    }
+	  ],
+	  "GroupSet": [{"Ref": "rSecurityGroupWideOpen"}],
+	  "Tags": [{"Key": "Name","Value": "FW Eth1/1"}]
+	},
+	"DependsOn": [ "rSecurityGroupWideOpen" ]
+      },
+  
+      "rFWPrivateNetworkInterface": {
+	"Type": "AWS::EC2::NetworkInterface",
+	"Properties": {
+	  "Description": "AWS FW1 E1/2",
+	  "SubnetId": {"Ref": "pPrivateSubnet"},
+	  "SourceDestCheck": "false",
+	  "PrivateIpAddresses": [
+	    {
+	      "PrivateIpAddress": "10.0.1.11",
+	      "Primary": "true"
+	    }
+	  ],
+	  "GroupSet": [{"Ref": "rSecurityGroupWideOpen"}],
+	  "Tags": [{"Key": "Name","Value": "FW Eth1/2"}]
+	},
+	"DependsOn": [ "rSecurityGroupWideOpen" ]
+      },
+  
+      "rFWManagementEIPAssociation": {
+	"Type": "AWS::EC2::EIPAssociation",
+	"Properties": {
+	   "AllocationId": { "Fn::GetAtt": [ "rFwManagementIP", "AllocationId" ] },
+	   "NetworkInterfaceId": { "Ref": "rFWManagementNetworkInterface" }
+	},
+	"DependsOn": [ "rFWManagementNetworkInterface", "rFwManagementIP" ]
+      },
+  
+      "rFWPublicEIPAssociation": {
+	"Type": "AWS::EC2::EIPAssociation",
+	"Properties": {
+	  "AllocationId": { "Fn::GetAtt": [ "rFwPublicIP", "AllocationId" ] },
+	  "NetworkInterfaceId": { "Ref": "rFWPublicNetworkInterface" }
+	},
+	"DependsOn": [ "rFWPublicNetworkInterface", "rFwPublicIP" ]
+       },
+  
+      "rPrivateEIPAssociation": {
+	"Type": "AWS::EC2::EIPAssociation",
+	"Properties": {
+	  "EIP": { "Ref": "rFwPrivateIP" },
+	  "InstanceId": { "Ref": "rWebInstance" }
+	},
+	"DependsOn": [
+	  "rWebInstance",
+	  "rFwPrivateIP"
+	]
+      },
+  
+      "rSecurityGroupWideOpen": {
+	"Type": "AWS::EC2::SecurityGroup",
+	"Properties": {
+	  "GroupDescription": "Wide open security group",
+	  "VpcId": {"Ref": "pBlueTeamVPC"},
+	  "Tags": [{"Key": "Name","Value": "External SG"}],
+	  "SecurityGroupIngress" : [
+	    {
+	      "IpProtocol": "-1",
+	      "CidrIp": "0.0.0.0/0"
+	    }
+	  ],
+	  "SecurityGroupEgress" : [
+	    {
+	      "IpProtocol": "-1",
+	      "CidrIp": "0.0.0.0/0"
+	    }
+	  ]
+	}
+      },
+  
+      "rRouteToFW": {
+	 "Type": "AWS::EC2::Route",
+	 "DependsOn" : "rFWInstance",
+	 "Properties": {
+	    "RouteTableId": { "Ref": "pRouteTablePrivate" },
+	    "GatewayId": { "Ref": "pBlueTeamIGW" },
+	    "DestinationCidrBlock": "0.0.0.0/0"
+	 }
+      },
+  
+      "rFWInstance": {
+	  "Type": "AWS::EC2::Instance",
+	"Properties": {
+	    "DisableApiTermination": "false",
+	  "InstanceInitiatedShutdownBehavior": "stop",
+	  "EbsOptimized": "true",
+	  "ImageId": { "Fn::FindInMap" : [ "PANFWRegionMap", { "Ref" : "AWS::Region" }, "AMI" ] },
+	  "InstanceType": "m4.xlarge",
+	  "KeyName": { "Ref": "pKeyName" },
+	  "Monitoring": "false",
+	  "Tags": [{ "Key": "Name", "Value": "PANW VM-Series Firewall (V8.0.0)" }],
+	  "NetworkInterfaces": [
+	    {
+	      "NetworkInterfaceId": { "Ref": "rFWManagementNetworkInterface"},
+	      "DeviceIndex": 0
+	    },
+	    {
+	      "NetworkInterfaceId": { "Ref": "rFWPublicNetworkInterface"},
+	      "DeviceIndex": 1
+	    },
+	    {
+	      "NetworkInterfaceId": { "Ref": "rFWPrivateNetworkInterface"},
+	      "DeviceIndex": 2
+	    }
+	  ]
+	  },
+	"DependsOn": [ "rFWPublicNetworkInterface", "rFWPrivateNetworkInterface" ]
+      },
+  
+      "rWebInstance": {
+	"Type": "AWS::EC2::Instance",
+	"Properties": {
+	  "DisableApiTermination": "false",
+	  "InstanceInitiatedShutdownBehavior": "stop",
+	  "ImageId": { "Fn::FindInMap" : [ "UbuntuRegionMap", { "Ref" : "AWS::Region" }, "AMI" ] },
+	  "InstanceType": "t2.micro",
+	  "KeyName": { "Ref": "pKeyName" },
+	  "Monitoring": "false",
+	  "Tags": [{"Key": "Name","Value": "Web Server"}],
+	  "NetworkInterfaces": [
+	    {
+	      "DeleteOnTermination": "true",
+	      "Description": "Primary network interface",
+	      "DeviceIndex": 0,
+	      "SubnetId": { "Ref": "pPrivateSubnet" },
+	      "PrivateIpAddresses": [
+		{
+		  "PrivateIpAddress": "10.0.1.101",
+		  "Primary": "true"
+		}
+	      ],
+	      "GroupSet": [ { "Ref": "rSecurityGroupWideOpen" } ]
+	    }
+	  ],
+	  "UserData" : { "Fn::Base64" : { "Fn::Join" : ["\n", [
+	      "#cloud-config",
+	      "apt_update: true",
+	      "runcmd:",
+	      "    - [apt-get, -y, --force-yes, install, nginx]",
+	      "output: {all: '| tee -a /var/log/cloud-config-output.log'}"
+	      ]]}
+	  }
+	}
+      }
+    },
+
+ 
+    "Outputs": {
+      "FirewallManagementURL": {
+	"Description": "VM-Series management interface URL",
+	"Value": { "Fn::Join" : ["", [
+	    "https://",
+	  { "Fn::GetAtt": [ "rFWInstance", "PublicIp" ]}
+	]]}
+      },
+      "FirewallManagementEIP": {
+	"Description": "VM-Series management interface EIP",
+	"Value": { "Fn::GetAtt": [ "rFWInstance", "PublicIp" ]}
+      },
+      "rFwPublicIP": {
+	"Description": "Public IP of data interface",
+	"Value": { "Ref": "rFwPublicIP" }
+      },
+      "rFwPrivateIP": {
+	"Description": "Public IP of web server",
+	"Value": { "Ref": "rFwPrivateIP" }
+      }
+    }
+}

@@ -52,8 +52,7 @@ aws cloudformation create-stack --stack-name goldbase-$(date +%Y%m%d%H%M%S) \
   --capabilities="CAPABILITY_IAM" \
   --parameters \
     ParameterKey=pKeyName,ParameterValue=$keyname \
-    ParameterKey=pRegionAZ2Name,ParameterValue=$az1 \
-    ParameterKey=pRegionAZ1Name,ParameterValue=$az2 \
+    ParameterKey=pRegionAZName,ParameterValue=$az1 \
     ParameterKey=pCreateCloudTrail,ParameterValue=$newaccount
 ```
 
