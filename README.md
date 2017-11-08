@@ -86,7 +86,7 @@ add a new line: 'from ansible.module_utils.basic import AnsibleModule'
     admin_password: "Neccdc-2018"
 
 # Run the Ansible playbook to setup the stack
-ansible-playbook ./playbooks/create-team-stack.yml
+    ansible-playbook ./playbooks/create-team-stack.yml
 
 The Palo Alto management HTTPS IP is reported by TASK [FirewallManagementEIP]
 The SSH/HTTP access to the protected service is reported by TASK [FirewallPublicDataInterface]
