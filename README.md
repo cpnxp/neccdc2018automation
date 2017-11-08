@@ -49,12 +49,8 @@ git clone https://github.com/kengraf/neccdc2018automation
 # Copy your private to the Ansible control box.  Needed for SSH to Palo Alto system.
 
 # Example (you will need your own values):
-wildhats@kali:~/.aws$ scp -i neccdc.pem neccdc.pem ec2-user@54.208.19.212:neccdc.pem
-The authenticity of host '54.208.19.212 (54.208.19.212)' can't be established.
-ECDSA key fingerprint is SHA256:1zf/Yq0+A96Fn3nfeAxW2oR105KCOyiKapAsB3be6ow.
-Are you sure you want to continue connecting (yes/no)? yes
-Warning: Permanently added '54.208.19.212' (ECDSA) to the list of known hosts.
-neccdc.pem                                    100% 1675    61.7KB/s   00:00    
+scp -i neccdc.pem neccdc.pem ec2-user@54.208.19.212:neccdc.pem
+chmod 400 neccdc.pem  
 
 # Configure the AWS CLI on the Ansible control box.
 [ec2-user@ip-172-31-72-224 ~]$ aws configure
