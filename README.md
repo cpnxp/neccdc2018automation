@@ -38,37 +38,36 @@ Set up an Ansible control box using AWS
 
 launch ec2 instance use an AWS linux, the security group needs to allow SSH
 
-sudo yum -y install git
-sudo pip install ansible pan-python pandevice xmltodict boto3 botocore
-
-ansible-galaxy install PaloAltoNetworks.paloaltonetworks
-
-git clone https://github.com/kengraf/neccdc2018automation
+    sudo yum -y install git
+    sudo pip install ansible pan-python pandevice xmltodict boto3 botocore
+    ansible-galaxy install PaloAltoNetworks.paloaltonetworks
+    git clone https://github.com/kengraf/neccdc2018automation
 
 # Configure identity
-# Copy your private to the Ansible control box.  Needed for SSH to Palo Alto system.
+Copy your private to the Ansible control box.  Needed for SSH to Palo Alto system.
 
 # Example (you will need your own values):
-scp -i neccdc.pem neccdc.pem ec2-user@54.208.19.212:neccdc.pem
-chmod 400 neccdc.pem  
+    scp -i neccdc.pem neccdc.pem ec2-user@54.208.19.212:neccdc.pem
 
 # Configure the AWS CLI on the Ansible control box.
-[ec2-user@ip-172-31-72-224 ~]$ aws configure
-AWS Access Key ID [None]: AKIAJK............
-AWS Secret Access Key [None]: xUuIs..................................
-region name [None]: us-east-1
-Default output format [None]: json
+    $ aws configure
+    AWS Access Key ID [None]: AKIAJK............
+    AWS Secret Access Key [None]: xUuIs..................................
+    region name [None]: us-east-1
+    Default output format [None]: json
 
 # fix bug in PaloAlto role
-Edit /home/ec2-user/.ansible/roles/PaloAltoNetworks.paloaltonetworks/library/panos_nat_rule.py
+    Edit /home/ec2-user/.ansible/roles/PaloAltoNetworks.paloaltonetworks/library/panos_nat_rule.py
+
 locate the line: 'from ansible.module_utils.basic import get_exception'
+
 add a new line: 'from ansible.module_utils.basic import AnsibleModule'
 
 # Configure your playbook
-cd ~/neccdc2018automation
+    cd ~/neccdc2018automation
 
 # Edit the 'VARS' section of the playbook 
-vi ./playbooks/create-team-stack.yml
+    vi ./playbooks/create-team-stack.yml
 # The UNH team's var section looked like this:
 
     # Standalone deploys can use the default, event will teamX
