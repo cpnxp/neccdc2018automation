@@ -363,7 +363,7 @@
 	"Value": { "Ref": "rFwPublicIP" }
       },
       "rFwPrivateIP": {
-	"Description": "Public IP of web server",
+	"Description": "Private IP",
 	"Value": { "Ref": "rFwPrivateIP" }
       }
     }

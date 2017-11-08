@@ -30,14 +30,19 @@
     - role: PaloAltoNetworks.paloaltonetworks
     
   vars:
-    # Standalone deploys can use the default
+    # Standalone deploys can use the default, event will teamX
     team_name: "{{ team | default('team1') }}"
+    # Standalone deploys can use the default, event will use campus name XXX.edu
     school_name: "{{ campus| default('default') }}"
-    # Competition: The SSH key will be the team's campus name
+    # Competition: The SSH key will be the team's campus name XXX.edu
     key_name: "{{ sshkey | default('NECCDC') }}"
+    # AMI selected are based in us-east-1
     region: "us-east-1"
+    # Location of private key to configure deployed systems
     key_filename: "../../campus_data/{{ campus | default('NECCDC') }}.pem"
+    # Palo Alto admin user
     admin_username: "admin"
+    # Password defined for Palo Alto web interface
     admin_password: "Neccdc-2018"
 
   tasks:
@@ -62,12 +67,12 @@
     - name: FirewallManagementEIP
       debug:
          msg: "{{ cloudformation.stack_outputs.FirewallManagementEIP }}"
-    - name: FirewallPublicDataInterface
+    - name: rFwPublicIP
       debug:
          msg: "{{ cloudformation.stack_outputs.rFwPublicIP }}"
-    - name: FwPublicIP
+    - name: rFwPrivateIP
       debug:
-         msg: "{{ cloudformation.stack_outputs.rFwPublicIP }}"
+         msg: "{{ cloudformation.stack_outputs.rFwPrivateIP }}"
     - name: wait for SSH prompt (timeout 10min)
       wait_for: port=22 host="{{ cloudformation.stack_outputs.FirewallManagementEIP }}" timeout=600
     - name: set admin password

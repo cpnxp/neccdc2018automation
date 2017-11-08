@@ -32,15 +32,71 @@ Prereqs:
 * [AWS CLI installed and configured](http://docs.aws.amazon.com/cli/latest/userguide/installing.html)
 * [Ansible installed and configured](http://docs.ansible.com/ansible/latest/intro_installation.html)
 
+The UNH team offered this guidance to setup an Ansible control box based on AWS EC2:
 
-To get yourself going:
+Set up an Ansible control box using AWS
 
-* clone this repo
-* change the variable values below
-* run the Ansible playbook
+launch ec2 instance use an AWS linux, the security group needs to allow SSH
 
-```ansible-playbook ./playbooks/create-team-stack.yml
-```
+sudo yum -y install git
+sudo pip install ansible pan-python pandevice xmltodict boto3 botocore
+
+ansible-galaxy install PaloAltoNetworks.paloaltonetworks
+
+git clone https://github.com/kengraf/neccdc2018automation
+
+# Configure identity
+# Copy your private to the Ansible control box.  Needed for SSH to Palo Alto system.
+
+# Example (you will need your own values):
+wildhats@kali:~/.aws$ scp -i neccdc.pem neccdc.pem ec2-user@54.208.19.212:neccdc.pem
+The authenticity of host '54.208.19.212 (54.208.19.212)' can't be established.
+ECDSA key fingerprint is SHA256:1zf/Yq0+A96Fn3nfeAxW2oR105KCOyiKapAsB3be6ow.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '54.208.19.212' (ECDSA) to the list of known hosts.
+neccdc.pem                                    100% 1675    61.7KB/s   00:00    
+
+# Configure the AWS CLI on the Ansible control box.
+[ec2-user@ip-172-31-72-224 ~]$ aws configure
+AWS Access Key ID [None]: AKIAJK............
+AWS Secret Access Key [None]: xUuIs..................................
+region name [None]: us-east-1
+Default output format [None]: json
+
+# fix bug in PaloAlto role
+Edit /home/ec2-user/.ansible/roles/PaloAltoNetworks.paloaltonetworks/library/panos_nat_rule.py
+locate the line: 'from ansible.module_utils.basic import get_exception'
+add a new line: 'from ansible.module_utils.basic import AnsibleModule'
+
+# Configure your playbook
+cd ~/neccdc2018automation
+
+# Edit the 'VARS' section of the playbook 
+vi ./playbooks/create-team-stack.yml
+# The UNH team's var section looked like this:
+
+    # Standalone deploys can use the default, event will teamX
+    team_name: "{{ team | default('team1') }}"
+    # Standalone deploys can use the default, event will use campus name XXX.edu
+    school_name: "{{ campus| default('default') }}"
+    # Competition: The SSH key will be the team's campus name XXX.edu
+    key_name: "{{ sshkey | default('NECCDC') }}"
+    # AMI selected are based in us-east-1
+    region: "us-east-1"
+    # Location of private key to configure deployed systems
+    key_filename: "/home/ec2-user/neccdc.pem"
+    # Palo Alto admin user
+    admin_username: "admin"
+    # Password defined for Palo Alto web interface
+    admin_password: "Neccdc-2018"
+
+# Run the Ansible playbook to setup the stack
+ansible-playbook ./playbooks/create-team-stack.yml
+
+The Palo Alto management HTTPS IP is reported by TASK [FirewallManagementEIP]
+The SSH/HTTP access to the protected service is reported by TASK [FirewallPublicDataInterface]
+
+The stack takes less than 5 minutes to deploy.  The Palo Alto configure steps take less than 10 minutes.  Is normal to see logins timeouts at the Palo Alot server does take some time to fully spin up.
 
 It'll take less than 5 minutes to create the network infrastructure and IAM 
 
