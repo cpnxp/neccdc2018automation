@@ -27,7 +27,7 @@
 	 "Type": "String"
       },
       "pDHCPoptions": {
-	 "Description": "Blue Team DCHP Options",
+	 "Description": "Blue Team DHCP Options",
 	 "Type": "String"
       },
       "pNACLBlueTeam": {
