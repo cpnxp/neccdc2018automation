@@ -54,16 +54,8 @@
          "Description": "Instance type for the webservers",
          "Type": "String"
       },
-      "pSecurityGroupWeb": {
+      "pCompetitionSG": {
          "Description": "SG for Webserver",
-         "Type": "String"
-      },
-      "pSecurityGroupApp": {
-         "Description": "SG for Private subnet",
-         "Type": "String"
-      },
-      "pSecurityGroupBastionHost": {
-         "Description": "SG for Bastion",
          "Type": "String"
       },
       "pRegionAZName": {
@@ -113,7 +105,7 @@
             "Description": "Interface for control traffic such as SSH",
             "GroupSet": [
                {
-                  "Ref": "pSecurityGroupBastionHost"
+                  "Ref": "pCompetitionSG"
                }
             ],
             "SourceDestCheck": "true",
@@ -176,10 +168,9 @@
 	      "Primary": "true"
 	    }
 	    ],
-	  "GroupSet": [{"Ref": "rSecurityGroupWideOpen"}],
+	  "GroupSet": [{"Ref": "pCompetitionSG"}],
 	  "Tags": [{"Key": "Name","Value": "FW Eth0"}]
-	},
-	"DependsOn": [ "rSecurityGroupWideOpen" ]
+	}
       },
   
       "rFWPublicNetworkInterface": {
@@ -194,10 +185,9 @@
 	      "Primary": "true"
 	    }
 	  ],
-	  "GroupSet": [{"Ref": "rSecurityGroupWideOpen"}],
+	  "GroupSet": [{"Ref": "pCompetitionSG"}],
 	  "Tags": [{"Key": "Name","Value": "FW Eth1/1"}]
-	},
-	"DependsOn": [ "rSecurityGroupWideOpen" ]
+	}
       },
   
       "rFWPrivateNetworkInterface": {
@@ -212,10 +202,9 @@
 	      "Primary": "true"
 	    }
 	  ],
-	  "GroupSet": [{"Ref": "rSecurityGroupWideOpen"}],
+	  "GroupSet": [{"Ref": "pCompetitionSG"}],
 	  "Tags": [{"Key": "Name","Value": "FW Eth1/2"}]
-	},
-	"DependsOn": [ "rSecurityGroupWideOpen" ]
+	}
       },
   
       "rFWManagementEIPAssociation": {
@@ -247,46 +236,30 @@
 	  "rFwPrivateIP"
 	]
       },
-  
-      "rSecurityGroupWideOpen": {
-	"Type": "AWS::EC2::SecurityGroup",
-	"Properties": {
-	  "GroupDescription": "Wide open security group",
-	  "VpcId": {"Ref": "pBlueTeamVPC"},
-	  "Tags": [{"Key": "Name","Value": "External SG"}],
-	  "SecurityGroupIngress" : [
-	    {
-	      "IpProtocol": "-1",
-	      "CidrIp": "0.0.0.0/0"
-	    }
-	  ],
-	  "SecurityGroupEgress" : [
-	    {
-	      "IpProtocol": "-1",
-	      "CidrIp": "0.0.0.0/0"
-	    }
-	  ]
-	}
-      },
-  
+    
       "rRouteToFW": {
 	 "Type": "AWS::EC2::Route",
 	 "DependsOn" : "rFWInstance",
 	 "Properties": {
 	    "RouteTableId": { "Ref": "pRouteTablePrivate" },
-	    "GatewayId": { "Ref": "pBlueTeamIGW" },
+	    "NetworkInterfaceId": { "Ref": "rFWPrivateNetworkInterface" },
 	    "DestinationCidrBlock": "0.0.0.0/0"
 	 }
       },
   
       "rFWInstance": {
-	  "Type": "AWS::EC2::Instance",
+	"Type": "AWS::EC2::Instance",
 	"Properties": {
-	    "DisableApiTermination": "false",
+	  "DisableApiTermination": "false",
 	  "InstanceInitiatedShutdownBehavior": "stop",
-	  "EbsOptimized": "true",
 	  "ImageId": { "Fn::FindInMap" : [ "PANFWRegionMap", { "Ref" : "AWS::Region" }, "AMI" ] },
-	  "InstanceType": "m4.xlarge",
+	  "InstanceType": "c4.xlarge",
+	  "BlockDeviceMappings": [
+	    {
+	      "DeviceName":"/dev/xvda",
+	      "Ebs": { "DeleteOnTermination":"true" }
+	    }
+	  ],
 	  "KeyName": { "Ref": "pKeyName" },
 	  "Monitoring": "false",
 	  "Tags": [{ "Key": "Name", "Value": "PANW VM-Series Firewall (V8.0.0)" }],
@@ -330,15 +303,13 @@
 		  "Primary": "true"
 		}
 	      ],
-	      "GroupSet": [ { "Ref": "rSecurityGroupWideOpen" } ]
+	      "GroupSet": [ { "Ref": "pCompetitionSG" } ]
 	    }
 	  ],
-	  "UserData" : { "Fn::Base64" : { "Fn::Join" : ["\n", [
-	      "#cloud-config",
-	      "apt_update: true",
-	      "runcmd:",
-	      "    - [apt-get, -y, --force-yes, install, nginx]",
-	      "output: {all: '| tee -a /var/log/cloud-config-output.log'}"
+	  "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+	      "#!/bin/bash\n",
+	      "apt-get update\n",
+	      "apt-get -y install nginx\n"
 	      ]]}
 	  }
 	}

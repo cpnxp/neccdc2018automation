@@ -10,8 +10,16 @@
     },
    "Parameters": {
       "pVpcCIDR": {
-         "Description": "CIDR block for Blue Team VPC",
-         "Type": "String"
+	 "Description": "CIDR block for Blue Team VPC",
+	 "Type": "String"
+      },
+      "pWhiteCIDR": {
+	 "Description": "CIDR block for Blue Team access",
+	 "Type": "String"
+      },
+      "pCampusCIDR": {
+	 "Description": "CIDR block for White Team access",
+	 "Type": "String"
       },
       "pBlueTeamVPC": {
          "Description": "Blue Team VPC",
@@ -57,10 +65,10 @@
         }
    },
    "Resources": {
-      "rSecurityGroupWeb": {
+      "rCompetitionSG": {
          "Type": "AWS::EC2::SecurityGroup",
          "Properties": {
-            "GroupDescription": "Security group for Reverse Proxy in Public subnet",
+            "GroupDescription": "Restrict to traffic from team campus",
             "VpcId": {
                "Ref": "pBlueTeamVPC"
             },
@@ -69,86 +77,68 @@
                   "IpProtocol": "tcp",
                   "FromPort": "443",
                   "ToPort": "443",
-                  "CidrIp": "0.0.0.0/0"
+                  "CidrIp": { "Ref" : "pCampusCIDR"}
                },
                {
                   "IpProtocol": "tcp",
                   "FromPort": "80",
                   "ToPort": "80",
-                  "CidrIp": "0.0.0.0/0"
+                  "CidrIp": { "Ref" : "pCampusCIDR"}
                },
                {
                   "IpProtocol": "tcp",
                   "FromPort": "8443",
                   "ToPort": "8443",
-                  "CidrIp": "0.0.0.0/0"
-               }
-            ],
-            "SecurityGroupEgress": [
-               {
-                  "IpProtocol": "-1",
-                  "CidrIp": "0.0.0.0/0"
-               }
-            ]
-         }
-      },
-      "rSecurityGroupBastionHost": {
-	 "Type": "AWS::EC2::SecurityGroup",
-	 "Properties": {
-	    "GroupDescription": "Security group for Bastion Host in Public subnet",
-	    "VpcId": { "Ref": "pBlueTeamVPC" },
-	    "SecurityGroupIngress": [
+                  "CidrIp": { "Ref" : "pCampusCIDR"}
+               },
 	       {
 		  "IpProtocol": "tcp",
 		  "FromPort": "22",
 		  "ToPort": "22",
-		  "CidrIp": "0.0.0.0/0"
+		  "CidrIp": { "Ref" : "pCampusCIDR"}
 	       },
 	       {
 		  "IpProtocol": "tcp",
 		  "FromPort": "3389",
 		  "ToPort": "3389",
-		  "CidrIp": "0.0.0.0/0"
-	       }
-	    ],
-	    "SecurityGroupEgress": [
+		  "CidrIp": { "Ref" : "pCampusCIDR"}
+	       },
+
+	       {
+		  "IpProtocol": "tcp",
+		  "FromPort": "443",
+		  "ToPort": "443",
+		  "CidrIp": { "Ref" : "pWhiteCIDR"}
+	       },
+	       {
+		  "IpProtocol": "tcp",
+		  "FromPort": "80",
+		  "ToPort": "80",
+		  "CidrIp": { "Ref" : "pWhiteCIDR"}
+	       },
+	       {
+		  "IpProtocol": "tcp",
+		  "FromPort": "8443",
+		  "ToPort": "8443",
+		  "CidrIp": { "Ref" : "pWhiteCIDR"}
+	       },
+	       {
+		  "IpProtocol": "tcp",
+		  "FromPort": "22",
+		  "ToPort": "22",
+		  "CidrIp": { "Ref" : "pWhiteCIDR"}
+	       },
+	       {
+		  "IpProtocol": "tcp",
+		  "FromPort": "3389",
+		  "ToPort": "3389",
+		  "CidrIp": { "Ref" : "pWhiteCIDR"}
+	       },
 	       {
 		  "IpProtocol": "-1",
-		  "CidrIp": "0.0.0.0/0"
+		  "CidrIp": "10.0.0.0/8"
 	       }
-	    ]
-	 }
-      },
-      "rSecurityGroupApp": {
-         "Type": "AWS::EC2::SecurityGroup",
-         "Properties": {
-            "GroupDescription": "Security group for Appservers",
-            "VpcId": { "Ref": "pBlueTeamVPC" },
-            "SecurityGroupIngress": [
-               {
-                  "IpProtocol": "tcp",
-                  "FromPort": "443",
-                  "ToPort": "443",
-                  "CidrIp": "0.0.0.0/0"
-               },
-               {
-                  "IpProtocol": "tcp",
-                  "FromPort": "80",
-                  "ToPort": "80",
-                  "CidrIp": "0.0.0.0/0"
-               },
-               {
-                  "IpProtocol": "tcp",
-                  "FromPort": "8443",
-                  "ToPort": "8443",
-                  "CidrIp": "0.0.0.0/0"
-               },
-               {
-                  "IpProtocol": "tcp",
-                  "FromPort": "22",
-                  "ToPort": "22",
-                  "CidrIp": "0.0.0.0/0"
-               }
+   
             ],
             "SecurityGroupEgress": [
                {
@@ -288,19 +278,9 @@
       }
    },
    "Outputs": {
-      "rSecurityGroupWeb": {
+      "rCompetitionSG": {
          "Value": {
-            "Ref": "rSecurityGroupWeb"
-         }
-      },
-      "rSecurityGroupBastionHost": {
-         "Value": {
-	    "Ref" : "rSecurityGroupBastionHost"
-         }
-      },
-      "rSecurityGroupApp": {
-         "Value": {
-            "Ref": "rSecurityGroupApp"
+            "Ref": "rCompetitionSG"
          }
       }
    }

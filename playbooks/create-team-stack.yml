@@ -33,13 +33,18 @@
     # Standalone deploys can use the default, event will teamX
     team_name: "{{ team | default('team1') }}"
     # Standalone deploys can use the default, event will use campus name XXX.edu
-    school_name: "{{ campus| default('default') }}"
-    # Competition: The SSH key will be the team's campus name XXX.edu
-    key_name: "{{ sshkey | default('NECCDC') }}"
+    school_name: "{{ campus | default('unh') }}"
     # AMI selected are based in us-east-1
     region: "us-east-1"
-    # Location of private key to configure deployed systems
-    key_filename: "../../campus_data/{{ campus | default('NECCDC') }}.pem"
+    
+    # Parameters specific to a team are maintained in the .aws/credentials file
+    white_cidr: "{{ lookup('ini', 'cidr section=neccdc file=~/.aws/credentials') }}"
+    campus_cidr: "{{ lookup('ini', 'cidr section={{ school_name }} file=~/.aws/credentials') }}"
+    aws_access_key: "{{ lookup('ini', 'aws_access_key_id section={{ school_name }} file=~/.aws/credentials') }}"
+    aws_secret_key: "{{ lookup('ini', 'aws_secret_access_key section={{ school_name }} file=~/.aws/credentials') }}"
+    key_name: "{{ lookup('ini', 'ssh_keyname section={{ school_name }} file=~/.aws/credentials') }}"
+    key_filename: "{{ lookup('ini', 'ssh_keyfile section={{ school_name }} file=~/.aws/credentials') }}"
+    
     # Palo Alto admin user
     admin_username: "admin"
     # Password defined for Palo Alto web interface
@@ -49,8 +54,6 @@
     - name: Create stack for {{ school_name }} as {{ team_name }}
       cloudformation:
         stack_name: "NECCDC2018-{{ team_name }}"
-        aws_access_key: "{{ lookup('ini', 'aws_access_key_id section={{ school_name }} file=~/.aws/credentials') }}"
-        aws_secret_key: "{{ lookup('ini', 'aws_secret_access_key section={{ school_name }} file=~/.aws/credentials') }}"
         state: "present"
         region: "{{ region }}"
         disable_rollback: false
@@ -60,6 +63,8 @@
           pKeyName: "{{ key_name }}"
           # Artifact from Goldbase, CloudTrail is always turned on
           pCreateCloudTrail: "no"
+          pCampusCIDR: "{{ campus_cidr }}"
+          pWhiteCIDR: "{{ white_cidr }}"
         tags:
           Stack: "blueteam_infrastructure"
       register: cloudformation
@@ -182,6 +187,17 @@
         description: 'Allow SSH traffic'
         source_zone: ['public']
         destination_zone: ['private']
+        action: 'allow'
+        commit: "True"
+    - name: add a rule to allow SNAT traffic
+      panos_security_rule:
+        ip_address: "{{ cloudformation.stack_outputs.FirewallManagementEIP }}"
+        password: "{{ admin_password }}"
+        operation: 'add'
+        rule_name: 'Enable NAT'
+        description: 'Allow private zone NAT traffic'
+        source_zone: ['any']
+        destination_zone: ['any']
         action: 'allow'
         commit: "True"
 
